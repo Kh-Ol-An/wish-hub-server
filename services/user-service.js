@@ -9,7 +9,7 @@ const ApiError = require("../exceptions/api-error");
 
 class UserService {
     async registration(name, email, password) {
-        const candidate = await UserModel.findOne({email});
+        const candidate = await UserModel.findOne({ email });
         if (candidate) {
             throw ApiError.BadRequest(`Користувач з електронною адресою ${email} вже існує`);
         }
@@ -17,11 +17,11 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 3);
         const activationLink = uuid.v4();
 
-        const user = await UserModel.create({name, email, password: hashPassword, activationLink});
+        const user = await UserModel.create({ name, email, password: hashPassword, activationLink });
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateToken({...userDto});
+        const tokens = tokenService.generateToken({ ...userDto });
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {
@@ -31,7 +31,7 @@ class UserService {
     }
 
     async activate(activationLink) {
-        const user = await UserModel.findOne({activationLink});
+        const user = await UserModel.findOne({ activationLink });
         if (!user) {
             throw ApiError.BadRequest('Невірне посилання для активації');
         }
@@ -41,7 +41,7 @@ class UserService {
     }
 
     async login(email, password) {
-        const user = await UserModel.findOne({email});
+        const user = await UserModel.findOne({ email });
         if (!user) {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
         }
@@ -52,7 +52,7 @@ class UserService {
         }
 
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateToken({...userDto});
+        const tokens = tokenService.generateToken({ ...userDto });
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {
@@ -79,7 +79,7 @@ class UserService {
 
         const user = await UserModel.findById(userData.id);
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateToken({...userDto});
+        const tokens = tokenService.generateToken({ ...userDto });
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {

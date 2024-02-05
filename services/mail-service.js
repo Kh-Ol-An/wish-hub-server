@@ -11,7 +11,7 @@ class MailService {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASSWORD
             }
-        })
+        });
     }
 
     async sendActivationMail(to, link) {
@@ -57,7 +57,7 @@ class MailService {
                     </div>
                 </body>
             `,
-        })
+        });
     }
 }
 
