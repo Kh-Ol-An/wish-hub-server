@@ -79,6 +79,17 @@ class UserController {
             next(error);
         }
     }
+
+    async saveMyUser(req, res, next) {
+        try {
+            const {id, name, birthday} = req.body;
+            const user = await userService.saveMyUser(id, name, birthday);
+
+            return res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new UserController();

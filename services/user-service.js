@@ -1,4 +1,5 @@
 const UserModel = require("../models/user-model");
+const { ObjectId } = require('mongoose').Types;
 const bcrypt = require("bcrypt");
 const uuid = require("uuid");
 const mailService = require("./mail-service");
@@ -90,6 +91,20 @@ class UserService {
     async getAllUsers() {
         const users = await UserModel.find();
         return users.map((user) => new UserDto(user));
+    }
+
+    async saveMyUser(id, name, birthday) {
+        const convertedId = new ObjectId(id);
+        const user = await UserModel.findById(convertedId);
+
+        if (!user) {
+            throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
+        }
+        user.name = name;
+        user.birthday = birthday;
+        await user.save();
+
+        return new UserDto(user);
     }
 }
 
