@@ -1,5 +1,6 @@
-const userService = require('../services/user-service');
 const { validationResult } = require('express-validator');
+const userService = require('../services/user-service');
+const awsUploadFile = require('./aws-controller');
 const ApiError = require('../exceptions/api-error');
 
 class UserController {
@@ -83,7 +84,11 @@ class UserController {
     async saveMyUser(req, res, next) {
         try {
             const { id, name, birthday } = req.body;
-            const user = await userService.saveMyUser(id, name, birthday);
+            console.log('birthday: ', birthday); // TODO: 29.02.2024 error
+
+            const avatar = await awsUploadFile(req.file, `user-${id}/avatar-${req.file.originalname}`, id, next);
+
+            const user = await userService.saveMyUser(id, name, birthday, avatar);
 
             return res.json(user);
         } catch (error) {

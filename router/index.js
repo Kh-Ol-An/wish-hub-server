@@ -1,4 +1,5 @@
 const Router = require('express').Router;
+const multer = require('multer');
 const {
     registration,
     login,
@@ -10,6 +11,8 @@ const {
 } = require('../controllers/user-controller');
 const { body } = require('express-validator');
 const authMiddleware = require('../middlewares/auth-middleware');
+
+const upload = multer();
 
 const router = new Router();
 
@@ -24,6 +27,6 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
-router.post('/user', authMiddleware, saveMyUser);
+router.post('/user', upload.single('avatar'), authMiddleware, saveMyUser);
 
 module.exports = router;
