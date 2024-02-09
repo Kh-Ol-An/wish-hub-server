@@ -1,4 +1,5 @@
 const AWS = require("aws-sdk");
+const mime = require('mime-types');
 const ApiError = require("../exceptions/api-error");
 
 const s3 = new AWS.S3({
@@ -7,12 +8,25 @@ const s3 = new AWS.S3({
     region: process.env.AWS_SDK_REGION,
 });
 
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+
+const isAllowedExtension = (filename) => {
+    const extension = filename.split('.').pop().toLowerCase();
+    return ALLOWED_EXTENSIONS.includes(extension);
+}
+
 const awsUploadFile = async (file, paramsKey, userId, next) => {
     try {
-        const existingFiles = await s3.listObjectsV2({ Bucket: process.env.AWS_SDK_BUCKET_NAME, Prefix: `user-${userId}/` }).promise();
+        const existingFiles = await s3.listObjectsV2({
+            Bucket: process.env.AWS_SDK_BUCKET_NAME,
+            Prefix: `user-${userId}/`,
+        }).promise();
 
         if (!file) {
-            await s3.deleteObject({ Bucket: process.env.AWS_SDK_BUCKET_NAME, Key: existingFiles.Contents[0].Key }).promise();
+            await s3.deleteObject({
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Key: existingFiles.Contents[0].Key,
+            }).promise();
             return null;
         }
 
@@ -20,12 +34,22 @@ const awsUploadFile = async (file, paramsKey, userId, next) => {
             return next(ApiError.BadRequest(`Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`));
         }
 
+        if (!isAllowedExtension(file.originalname)) {
+            return next(ApiError.BadRequest(
+                `Файл з розширенням "${
+                    mime.extension(file.mimetype)
+                }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
+                    ALLOWED_EXTENSIONS.join(', ')
+                }"`
+            ));
+        }
+
         const params = {
             Bucket: process.env.AWS_SDK_BUCKET_NAME,
             Key: paramsKey,
             Body: file.buffer,
             ContentType: file.mimetype,
-            ContentLength: file.size
+            ContentLength: file.size,
         };
 
         if (existingFiles.Contents.length > 0) {
@@ -34,7 +58,10 @@ const awsUploadFile = async (file, paramsKey, userId, next) => {
                 return '';
             }
 
-            await s3.deleteObject({ Bucket: process.env.AWS_SDK_BUCKET_NAME, Key: existingFiles.Contents[0].Key }).promise();
+            await s3.deleteObject({
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Key: existingFiles.Contents[0].Key,
+            }).promise();
         }
 
         const data = await s3.upload(params).promise();

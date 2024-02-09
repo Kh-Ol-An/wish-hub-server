@@ -1,7 +1,18 @@
 const { validationResult } = require('express-validator');
+const mime = require('mime-types');
 const userService = require('../services/user-service');
 const awsUploadFile = require('./aws-controller');
 const ApiError = require('../exceptions/api-error');
+const crypto = require("crypto");
+
+const generateFileId = (buffer) => {
+    if (!buffer) {
+        return '';
+    }
+    const hash = crypto.createHash('md5');
+    hash.update(buffer);
+    return hash.digest('hex');
+};
 
 class UserController {
     async registration(req, res, next) {
@@ -84,9 +95,13 @@ class UserController {
     async saveMyUser(req, res, next) {
         try {
             const { id, name, birthday } = req.body;
-            console.log('birthday: ', birthday); // TODO: 29.02.2024 error
 
-            const avatar = await awsUploadFile(req.file, `user-${id}/avatar-${req.file.originalname}`, id, next);
+            const avatar = await awsUploadFile(
+                req.file,
+                `user-${id}/avatar-${generateFileId(req.file?.buffer)}.${mime.extension(req.file?.mimetype)}`,
+                id,
+                next,
+            );
 
             const user = await userService.saveMyUser(id, name, birthday, avatar);
 
