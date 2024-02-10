@@ -94,9 +94,10 @@ class UserController {
 
     async saveMyUser(req, res, next) {
         try {
-            const { id, name, birthday } = req.body;
+            const { id, name, birthday, deleteAvatar } = req.body;
 
             const avatar = await awsUploadFile(
+                deleteAvatar,
                 req.file,
                 `user-${id}/avatar-${generateFileId(req.file?.buffer)}.${mime.extension(req.file?.mimetype)}`,
                 id,

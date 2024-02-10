@@ -15,19 +15,23 @@ const isAllowedExtension = (filename) => {
     return ALLOWED_EXTENSIONS.includes(extension);
 }
 
-const awsUploadFile = async (file, paramsKey, userId, next) => {
+const awsUploadFile = async (deleteFile, file, paramsKey, userId, next) => {
     try {
         const existingFiles = await s3.listObjectsV2({
             Bucket: process.env.AWS_SDK_BUCKET_NAME,
             Prefix: `user-${userId}/`,
         }).promise();
 
-        if (!file) {
+        if (deleteFile === 'true') {
             await s3.deleteObject({
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
                 Key: existingFiles.Contents[0].Key,
             }).promise();
             return null;
+        }
+
+        if (!file) {
+            return '';
         }
 
         if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
