@@ -6,6 +6,7 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     birthday: { type: Date },
     avatar: { type: String },
+    wishList: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
     isActivated: { type: Boolean, default: false },
     activationLink: { type: String },
     createdAt: { type: Date, default: Date.now },

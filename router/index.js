@@ -9,6 +9,7 @@ const {
     getUsers,
     saveMyUser,
 } = require('../controllers/user-controller');
+const { createWish, getWishList } = require('../controllers/wish-controller');
 const { body } = require('express-validator');
 const authMiddleware = require('../middlewares/auth-middleware');
 
@@ -27,6 +28,8 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
+router.post('/wishes', authMiddleware, createWish);
+router.get('/wishes', authMiddleware, getWishList);
 router.post('/user', upload.single('avatar'), authMiddleware, saveMyUser);
 
 module.exports = router;

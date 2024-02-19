@@ -3,6 +3,7 @@ class UserDto {
     email;
     birthday;
     avatar;
+    wishList;
     createdAt;
     updatedAt;
     id;
@@ -13,6 +14,7 @@ class UserDto {
         this.email = model.email;
         this.birthday = model.birthday;
         this.avatar = model.avatar;
+        this.wishList = model.wishList;
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
         this.id = model._id;
