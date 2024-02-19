@@ -28,7 +28,7 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
-router.post('/wishes', authMiddleware, createWish);
+router.post('/wish', upload.single(), authMiddleware, createWish);
 router.get('/wishes', authMiddleware, getWishList);
 router.post('/user', upload.single('avatar'), authMiddleware, saveMyUser);
 
