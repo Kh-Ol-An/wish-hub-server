@@ -5,6 +5,7 @@ const WishSchema = new Schema({
     name: { type: String, required: true },
     price: { type: String },
     description: { type: String },
+    images: { type: String },
 });
 
 module.exports = model('Wish', WishSchema);

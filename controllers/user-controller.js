@@ -92,7 +92,7 @@ class UserController {
         }
     }
 
-    async saveMyUser(req, res, next) {
+    async updateMyUser(req, res, next) {
         try {
             const { id, name, birthday, deleteAvatar } = req.body;
 
@@ -104,7 +104,7 @@ class UserController {
                 next,
             );
 
-            const user = await userService.saveMyUser(id, name, birthday, avatar);
+            const user = await userService.updateMyUser(id, name, birthday, avatar);
 
             return res.json(user);
         } catch (error) {

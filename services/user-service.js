@@ -93,7 +93,7 @@ class UserService {
         return users.map((user) => new UserDto(user));
     }
 
-    async saveMyUser(id, name, birthday, avatar) {
+    async updateMyUser(id, name, birthday, avatar) {
         const convertedId = new ObjectId(id);
         const user = await UserModel.findById(convertedId);
 

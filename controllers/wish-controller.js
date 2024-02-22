@@ -5,6 +5,8 @@ class UserController {
         try {
             const { userId, name, price, description } = req.body;
 
+            console.log('createWish images: ', req.files);
+
             const wish = await wishService.createWish(userId, name, price, description);
 
             return res.json(wish);

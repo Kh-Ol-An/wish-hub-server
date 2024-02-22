@@ -7,13 +7,15 @@ const {
     activate,
     logout,
     getUsers,
-    saveMyUser,
+    updateMyUser,
 } = require('../controllers/user-controller');
 const { createWish, getWishList } = require('../controllers/wish-controller');
 const { body } = require('express-validator');
 const authMiddleware = require('../middlewares/auth-middleware');
 
 const upload = multer();
+
+const fields = Array.from({ length: 10 }, (_, index) => ({ name: `image${index + 1}` }));
 
 const router = new Router();
 
@@ -28,8 +30,8 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
-router.post('/wish', upload.single(), authMiddleware, createWish);
+router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.get('/wishes', authMiddleware, getWishList);
-router.post('/user', upload.single('avatar'), authMiddleware, saveMyUser);
+router.post('/user', upload.single('avatar'), authMiddleware, updateMyUser);
 
 module.exports = router;
