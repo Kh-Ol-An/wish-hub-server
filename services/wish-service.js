@@ -1,5 +1,6 @@
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
+const WishDto = require("../dtos/wish-dto");
 
 class WishService {
     async createWish(userId, name, price, description, images) {
@@ -12,7 +13,7 @@ class WishService {
         user.wishList.push(wish.id);
         await user.save();
 
-        return wish;
+        return new WishDto(wish);
     };
 
     async getWishList(userId) {
@@ -20,7 +21,7 @@ class WishService {
         if (!user) {
             throw new Error('Користувач не знайдений');
         }
-        return user.wishList;
+        return user.wishList.map(wish => new WishDto(wish));
     };
 }
 

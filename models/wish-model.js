@@ -1,7 +1,6 @@
 const { Schema, model } = require('mongoose');
 
 const ImageSchema = new Schema({
-    id: { type: String },
     path: { type: String },
 });
 
@@ -11,6 +10,13 @@ const WishSchema = new Schema({
     price: { type: String },
     description: { type: String },
     images: [ImageSchema],
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+});
+
+WishSchema.pre('save', function (next) {
+    this.updatedAt = new Date();
+    next();
 });
 
 module.exports = model('Wish', WishSchema);

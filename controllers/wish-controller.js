@@ -2,8 +2,8 @@ const wishService = require('../services/wish-service');
 const awsUploadFile = require('./aws-controller');
 const mime = require('mime-types');
 const generateFileId = require('../utils/generate-file-id');
-const WishModel = require("../models/wish-model");
-const ApiError = require("../exceptions/api-error");
+const WishModel = require('../models/wish-model');
+const ApiError = require('../exceptions/api-error');
 
 //awsUploadFile existingFiles:  [
 //    {
@@ -49,7 +49,6 @@ class UserController {
                 );
 
                 images.push({
-                    id: generateFileId(file[0].buffer),
                     path: image,
                 });
             }
