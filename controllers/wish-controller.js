@@ -64,7 +64,7 @@ class UserController {
 
     async getWishList(req, res, next) {
         try {
-            const userId = req.params.userId;
+            const userId = req.query.userId;
 
             const wishList = await wishService.getWishList(userId);
 
