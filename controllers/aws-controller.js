@@ -66,9 +66,10 @@ const awsUploadFile = async (deleteFile, file, paramsKey, userId, next) => {
             const avatarExists = existingFiles.Contents.some(file => file.Key.split('/')[1] === 'avatar');
             if (paramsKey.split('/')[1] === 'avatar' && avatarExists) {
                 // Якщо користувач намагається завантажити avatar, який вже є в системі
+                const existingAvatar = existingFiles.Contents.find(file => file.Key.split('/')[1] === 'avatar');
                 await s3.deleteObject({
                     Bucket: process.env.AWS_SDK_BUCKET_NAME,
-                    Key: paramsKey,
+                    Key: existingAvatar.Key,
                 }).promise();
             }
         }
