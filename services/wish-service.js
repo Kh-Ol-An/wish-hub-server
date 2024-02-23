@@ -1,9 +1,9 @@
-const wishModel = require('../models/wish-model');
+const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
 
 class WishService {
     async createWish(userId, name, price, description, images) {
-        const wish = await wishModel.create({ name, price, description, images });
+        const wish = await WishModel.create({ name, price, description, images });
         const user = await UserModel.findById(userId);
         if (!user) {
             throw new Error('Користувач не знайдений');

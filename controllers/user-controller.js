@@ -3,16 +3,7 @@ const mime = require('mime-types');
 const userService = require('../services/user-service');
 const awsUploadFile = require('./aws-controller');
 const ApiError = require('../exceptions/api-error');
-const crypto = require("crypto");
-
-const generateFileId = (buffer) => {
-    if (!buffer) {
-        return '';
-    }
-    const hash = crypto.createHash('md5');
-    hash.update(buffer);
-    return hash.digest('hex');
-};
+const generateFileId = require('../utils/generate-file-id');
 
 class UserController {
     async registration(req, res, next) {
@@ -99,7 +90,7 @@ class UserController {
             const avatar = await awsUploadFile(
                 deleteAvatar,
                 req.file,
-                `user-${id}/avatar-${generateFileId(req.file?.buffer)}.${mime.extension(req.file?.mimetype)}`,
+                `user-${id}/avatar/${generateFileId(req.file?.buffer)}.${mime.extension(req.file?.mimetype)}`,
                 id,
                 next,
             );

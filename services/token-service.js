@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const tokenModel = require('../models/token-model');
+const TokenModel = require('../models/token-model');
 
 class TokenService {
     generateToken(payload) {
@@ -13,17 +13,17 @@ class TokenService {
     }
 
     async saveToken(userId, refreshToken) {
-        const tokenData = await tokenModel.findOne({ user: userId });
+        const tokenData = await TokenModel.findOne({ user: userId });
         if (tokenData) {
             tokenData.refreshToken = refreshToken;
             return tokenData.save();
         }
-        const token = await tokenModel.create({ user: userId, refreshToken });
+        const token = await TokenModel.create({ user: userId, refreshToken });
         return token;
     }
 
     async removeToken(refreshToken) {
-        const tokenData = await tokenModel.deleteOne({ refreshToken });
+        const tokenData = await TokenModel.deleteOne({ refreshToken });
         return tokenData;
     }
 
@@ -46,7 +46,7 @@ class TokenService {
     }
 
     async findToken(refreshToken) {
-        const tokenData = await tokenModel.findOne({ refreshToken });
+        const tokenData = await TokenModel.findOne({ refreshToken });
         return tokenData;
     }
 }
