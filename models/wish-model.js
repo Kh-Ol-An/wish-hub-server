@@ -7,7 +7,7 @@ const ImageSchema = new Schema({
 const WishSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     name: { type: String, required: true },
-    price: { type: String },
+    price: { type: String, required: true },
     description: { type: String },
     images: [ImageSchema],
     createdAt: { type: Date, default: Date.now },
