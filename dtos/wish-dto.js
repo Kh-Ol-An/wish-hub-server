@@ -1,3 +1,16 @@
+class ImageDto {
+    id;
+    path;
+    name;
+
+    constructor(model) {
+        this.id = model._id;
+        this.path = model.path;
+        this.name = model.name;
+    }
+}
+
+
 class WishDto {
     id;
     name;
@@ -12,7 +25,7 @@ class WishDto {
         this.name = model.name;
         this.price = model.price;
         this.description = model.description;
-        this.images = model.images;
+        this.images = model.images.map(image => new ImageDto(image));
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
     }

@@ -2,6 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const ImageSchema = new Schema({
     path: { type: String },
+    name: { type: String },
 });
 
 const WishSchema = new Schema({

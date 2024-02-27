@@ -39,17 +39,18 @@ class UserController {
 
             const fileValues = Object.values(req.files);
 
-            for (const file of fileValues) {
+            for (let i = 0; i < fileValues.length; i++) {
                 const image = await awsUploadFile(
                     'false',
-                    file[0],
-                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/image-${generateFileId(file[0].buffer)}.${mime.extension(file[0].mimetype)}`,
+                    fileValues[i][0],
+                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/image-${generateFileId(fileValues[i][0].buffer)}.${mime.extension(fileValues[i][0].mimetype)}`,
                     userId,
                     next,
                 );
 
                 images.push({
                     path: image,
+                    name: `image-${i + 1}`,
                 });
             }
 
