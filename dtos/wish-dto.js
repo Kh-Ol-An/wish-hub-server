@@ -1,12 +1,14 @@
 class ImageDto {
     id;
     path;
-    name;
+    position;
+    delete;
 
     constructor(model) {
         this.id = model._id;
         this.path = model.path;
-        this.name = model.name;
+        this.position = model.position;
+        this.delete = model.delete;
     }
 }
 

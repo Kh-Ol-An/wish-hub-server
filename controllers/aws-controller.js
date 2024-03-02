@@ -107,27 +107,6 @@ class AwsController {
             return next(ApiError.BadRequest(`Помилка при видаленні файлу на Amazon S3: ${error}`));
         }
     }
-
-    async renameFile(oldKey, newKey, next) {
-        try {
-            // Копіюємо файл з новою назвою
-            await s3.copyObject({
-                Bucket: process.env.AWS_SDK_BUCKET_NAME,
-                CopySource: `${process.env.AWS_SDK_BUCKET_NAME}/${oldKey}`,
-                Key: newKey,
-            }).promise();
-
-            // Видаляємо старий файл
-            await s3.deleteObject({
-                Bucket: process.env.AWS_SDK_BUCKET_NAME,
-                Key: oldKey,
-            }).promise();
-
-            return 'Назву файлу успішно змінено';
-        } catch (error) {
-            return next(ApiError.BadRequest(`Помилка при зміні назви файлу на Amazon S3: ${error}`));
-        }
-    }
 }
 
 module.exports = new AwsController();

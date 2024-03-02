@@ -1,34 +1,25 @@
+const { ObjectId } = require('mongoose').Types;
+const mime = require('mime-types');
 const wishService = require('../services/wish-service');
 const AwsController = require('./aws-controller');
-const mime = require('mime-types');
 const generateFileId = require('../utils/generate-file-id');
 const WishModel = require('../models/wish-model');
 const ApiError = require('../exceptions/api-error');
 
-const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s!"№#$%&()*,-;=?@_]*$/;
-
-const protocol = 'https://';
-const getPathWithoutImageName = (originalUrl) => {
-    const urlWithoutProtocol = originalUrl.replace(protocol, '');
-    return `${protocol}${urlWithoutProtocol.split('/')[0]}/${urlWithoutProtocol.split('/')[1]}/${urlWithoutProtocol.split('/')[2]}`;
-};
-const getImageName = (originalUrl) => {
-    const urlWithoutProtocol = originalUrl.replace(protocol, '');
-    return urlWithoutProtocol.split('/')[3];
-};
-const getImageIdWithExtension = (url) => {
-    return getImageName(url).split('_')[1];
-};
-const getImageNameWithPosition = (url) => {
-    return getImageName(url).split('_')[0];
-};
-
 class WishController {
+    static nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s!"№#$%&()*,-;=?@_]*$/;
+
+    static getImageId(url) {
+        const urlWithoutProtocol = url.replace('https://', '');
+        const imageName = urlWithoutProtocol.split('/')[3];
+        return imageName.split('_')[0];
+    };
+
     async createWish(req, res, next) {
         try {
             const { userId, name, price, description } = req.body;
 
-            if (!nameRegex.test(name)) {
+            if (!WishController.nameRegex.test(name)) {
                 return next(ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`));
             }
 
@@ -42,13 +33,13 @@ class WishController {
             for (const key in files) {
                 const image = await AwsController.uploadFile(
                     files[key][0],
-                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${key}_${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
+                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
                     next,
                 );
 
                 images.push({
                     path: image,
-                    name: key,
+                    position: Number(key.split('-')[1]),
                 });
             }
 
@@ -63,85 +54,72 @@ class WishController {
     async updateWish(req, res, next) {
         try {
             const body = req.body;
-            if (!nameRegex.test(body.name)) {
+            if (!WishController.nameRegex.test(body.name)) {
                 return next(ApiError.BadRequest(`Назва бажання "${body.name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`));
             }
 
+            const potentialWish = await WishModel.findOne({ user: body.userId, name: body.name });
+            if (potentialWish) {
+                const potentialWishId = new ObjectId(potentialWish._id).toString();
+                if (potentialWishId !== body.id) {
+                    return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${body.name}".`));
+                }
+            }
+
             const allImages = [];
+            // проходимось по всіх полях, які містять дані про картинки
             for (const key in body) {
                 if (key.includes('image')) {
-                    if (body[key] === '"delete"') {
-                        const result = await AwsController.deleteFile(
-                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${key}`,
+                    // якщо картинка підлягає видаленню, то видаляємо її з бази Amazon S3
+                    const parsedImage = JSON.parse(body[key]);
+                    if (parsedImage.delete) {
+                        await AwsController.deleteFile(
+                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${WishController.getImageId(parsedImage.path)}`,
                             next,
                         );
-                        allImages.push({
-                            path: result,
-                            name: key,
-                        });
-                    } else {
-                        allImages.push({
-                            path: JSON.parse(body[key]).path,
-                            name: key,
-                        });
                     }
+
+                    // додаємо картинку до загального масиву з валідною позицією
+                    allImages.push({
+                        ...parsedImage,
+                        position: Number(key.split('-')[1]),
+                    });
                 }
             }
             const files = req.files;
+            // якщо є нові картинки, то додаємо їх до бази Amazon S3
             for (const key in files) {
-                const image = await AwsController.uploadFile(
+                const path = await AwsController.uploadFile(
                     files[key][0],
                     `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${key}_${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
                     next,
                 );
 
+                // додаємо картинку до загального масиву з валідною позицією
                 allImages.push({
-                    path: image,
-                    name: key,
+                    path,
+                    position: Number(key.split('-')[1]),
                 });
             }
-            allImages.sort((a, b) => {
-                return a.name.localeCompare(b.name);
-            });
 
+            // сортуємо всі картинки за позицією
+            allImages.sort((a, b) => a.position - b.position);
+
+            // видаляємо картинки з бази MongoDB, які вже були видалені з бази Amazon S3
             const imagesWithoutDeleted = [];
             let shift = 0;
             for (let i = 0; i < allImages.length; i++) {
-                if (allImages[i].path === 'deleted') {
+                if (allImages[i].delete) {
                     shift++;
                 } else {
                     imagesWithoutDeleted.push({
                         ...allImages[i],
-                        name: `image-${i + 1 - shift}`,
+                        position: i + 1 - shift,
                     });
                 }
             }
 
-            const imagesResult = [];
-            if (shift > 0) {
-                for (let i = 0; i < imagesWithoutDeleted.length; i++) {
-                    const image = imagesWithoutDeleted[i];
-                    const newKey = `image-${i + 1}`;
-                    if (getImageNameWithPosition(image.path) !== newKey) {
-                        await AwsController.renameFile(
-                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${getImageNameWithPosition(image.path)}_${getImageIdWithExtension(image.path)}`,
-                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${newKey}_${getImageIdWithExtension(image.path)}`,
-                            next,
-                        );
-
-                        imagesResult.push({
-                            ...image,
-                            path: `${getPathWithoutImageName(image.path)}/${newKey}_${getImageIdWithExtension(image.path)}`,
-                        });
-                    } else {
-                        imagesResult.push(image);
-                    }
-                }
-            } else {
-                imagesResult.push(...imagesWithoutDeleted);
-            }
-
-            const wish = await wishService.updateWish(body.id, body.name, body.price, body.description, imagesResult);
+            const wish = await wishService.updateWish(body.id, body.name, body.price, body.description, imagesWithoutDeleted);
 
             return res.json(wish);
         } catch (error) {

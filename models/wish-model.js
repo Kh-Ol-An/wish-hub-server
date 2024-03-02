@@ -2,7 +2,8 @@ const { Schema, model } = require('mongoose');
 
 const ImageSchema = new Schema({
     path: { type: String },
-    name: { type: String },
+    position: { type: Number },
+    delete: { type: Boolean, default: false },
 });
 
 const WishSchema = new Schema({

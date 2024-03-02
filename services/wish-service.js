@@ -6,11 +6,12 @@ const ApiError = require("../exceptions/api-error");
 
 class WishService {
     async createWish(userId, name, price, description, images) {
-        const wish = await WishModel.create({ name, price, description, images });
         const user = await UserModel.findById(userId);
         if (!user) {
             throw new Error('Користувач не знайдений');
         }
+
+        const wish = await WishModel.create({ user: userId, name, price, description, images });
 
         user.wishList.push(wish.id);
         await user.save();
