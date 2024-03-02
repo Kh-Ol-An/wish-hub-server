@@ -14,71 +14,120 @@ const isAllowedExtension = (filename) => {
     const extension = filename.split('.').pop().toLowerCase();
     return ALLOWED_EXTENSIONS.includes(extension);
 }
+class AwsController {
+    async uploadFile(file, paramsKey, next) {
+        try {
+            if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
+                return next(ApiError.BadRequest(`Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`));
+            }
 
-const awsUploadFile = async (deleteFile, file, paramsKey, userId, next) => {
-    try {
-        const existingFiles = await s3.listObjectsV2({
-            Bucket: process.env.AWS_SDK_BUCKET_NAME,
-            Prefix: `user-${userId}/`,
-        }).promise();
+            if (!isAllowedExtension(file.originalname)) {
+                return next(ApiError.BadRequest(
+                    `Файл з розширенням "${
+                        mime.extension(file.mimetype)
+                    }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
+                        ALLOWED_EXTENSIONS.join(', ')
+                    }"`
+                ));
+            }
 
-        if (deleteFile === 'true') {
+            const params = {
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Key: paramsKey,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+                ContentLength: file.size,
+            };
+
+            const data = await s3.upload(params).promise();
+            return data.Location;
+        } catch (error) {
+            return next(ApiError.BadRequest(`Помилка при завантаженні файлу на Amazon S3: ${error}`));
+        }
+    }
+
+    async updateFile(file, prefixPath, paramsKey, userId, next) {
+        try {
+            if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
+                return next(ApiError.BadRequest(`Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`));
+            }
+
+            if (!isAllowedExtension(file.originalname)) {
+                return next(ApiError.BadRequest(
+                    `Файл з розширенням "${
+                        mime.extension(file.mimetype)
+                    }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
+                        ALLOWED_EXTENSIONS.join(', ')
+                    }"`
+                ));
+            }
+
+            const existingFiles = await s3.listObjectsV2({
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Prefix: prefixPath,
+            }).promise();
+
+            const params = {
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Key: paramsKey,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+                ContentLength: file.size,
+            };
+
+            if (existingFiles.Contents.length > 0) {
+                const existingFile = existingFiles.Contents.find(file => file.Key === params.Key);
+                if (existingFile) {
+                    // Якщо користувач намагається завантажити файл, який вже є в системі
+                    return null;
+                }
+            }
+
+            const data = await s3.upload(params).promise();
+            return data.Location;
+        } catch (error) {
+            return next(ApiError.BadRequest(`Помилка при оновлені файлу на Amazon S3: ${error}`));
+        }
+    }
+
+    async deleteFile(prefixPath, next) {
+        try {
+            const existingFiles = await s3.listObjectsV2({
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Prefix: prefixPath,
+            }).promise();
+
             await s3.deleteObject({
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
                 Key: existingFiles.Contents[0].Key,
             }).promise();
-            return null;
+
+            return 'deleted';
+        } catch (error) {
+            return next(ApiError.BadRequest(`Помилка при видаленні файлу на Amazon S3: ${error}`));
         }
+    }
 
-        if (!file) {
-            return '';
+    async renameFile(oldKey, newKey, next) {
+        try {
+            // Копіюємо файл з новою назвою
+            await s3.copyObject({
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                CopySource: `${process.env.AWS_SDK_BUCKET_NAME}/${oldKey}`,
+                Key: newKey,
+            }).promise();
+
+            // Видаляємо старий файл
+            await s3.deleteObject({
+                Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                Key: oldKey,
+            }).promise();
+
+            return 'Назву файлу успішно змінено';
+        } catch (error) {
+            return next(ApiError.BadRequest(`Помилка при зміні назви файлу на Amazon S3: ${error}`));
         }
-
-        if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
-            return next(ApiError.BadRequest(`Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`));
-        }
-
-        if (!isAllowedExtension(file.originalname)) {
-            return next(ApiError.BadRequest(
-                `Файл з розширенням "${
-                    mime.extension(file.mimetype)
-                }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
-                    ALLOWED_EXTENSIONS.join(', ')
-                }"`
-            ));
-        }
-
-        const params = {
-            Bucket: process.env.AWS_SDK_BUCKET_NAME,
-            Key: paramsKey,
-            Body: file.buffer,
-            ContentType: file.mimetype,
-            ContentLength: file.size,
-        };
-
-        if (existingFiles.Contents.length > 0) {
-            const existingFile = existingFiles.Contents.find(file => file.Key === params.Key);
-            if (existingFile) {
-                // Якщо користувач намагається завантажити файл, який вже є в системі
-                return '';
-            }
-
-            const avatarExists = existingFiles.Contents.some(file => file.Key.split('/')[1] === 'avatar');
-            if (paramsKey.split('/')[1] === 'avatar' && avatarExists) {
-                // Якщо користувач намагається завантажити avatar, який вже є в системі
-                const existingAvatar = existingFiles.Contents.find(file => file.Key.split('/')[1] === 'avatar');
-                await s3.deleteObject({
-                    Bucket: process.env.AWS_SDK_BUCKET_NAME,
-                    Key: existingAvatar.Key,
-                }).promise();
-            }
-        }
-
-        const data = await s3.upload(params).promise();
-        return data.Location;
-    } catch (error) {
-        return next(ApiError.BadRequest(`Помилка при завантаженні або видаленні файлу на Amazon S3: ${error}`));
     }
 }
 
-module.exports = awsUploadFile;
+module.exports = new AwsController();

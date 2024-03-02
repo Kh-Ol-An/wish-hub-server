@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const mime = require('mime-types');
 const userService = require('../services/user-service');
-const awsUploadFile = require('./aws-controller');
+const AwsController = require('./aws-controller');
 const ApiError = require('../exceptions/api-error');
 const generateFileId = require('../utils/generate-file-id');
 
@@ -85,17 +85,27 @@ class UserController {
 
     async updateMyUser(req, res, next) {
         try {
-            const { id, name, birthday, deleteAvatar } = req.body;
+            const { id, name, birthday, avatar } = req.body;
+            const file = req.file;
 
-            const avatar = await awsUploadFile(
-                deleteAvatar,
-                req.file,
-                `user-${id}/avatar/${generateFileId(req.file?.buffer)}.${mime.extension(req.file?.mimetype)}`,
-                id,
-                next,
-            );
+            let avatarPath = avatar;
+            if (avatar === 'delete') {
+                avatarPath = await AwsController.deleteFile(
+                    `user-${id}/avatar`,
+                    next,
+                );
+            }
+            if (!!file?.buffer) {
+                avatarPath = await AwsController.updateFile(
+                    file,
+                    `user-${id}/avatar`,
+                    `user-${id}/avatar/${generateFileId(file?.buffer)}.${mime.extension(file?.mimetype)}`,
+                    id,
+                    next,
+                );
+            }
 
-            const user = await userService.updateMyUser(id, name, birthday, avatar);
+            const user = await userService.updateMyUser(id, name, birthday, avatarPath);
 
             return res.json(user);
         } catch (error) {

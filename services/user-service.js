@@ -102,12 +102,7 @@ class UserService {
         }
         user.name = name;
         user.birthday = birthday;
-        if (avatar === null) {
-            user.avatar = '';
-        }
-        if (avatar?.length > 0) {
-            user.avatar = avatar;
-        }
+        avatar !== null && (user.avatar = avatar);
         await user.save();
 
         return new UserDto(user);

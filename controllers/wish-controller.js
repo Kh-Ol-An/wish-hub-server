@@ -1,31 +1,33 @@
 const wishService = require('../services/wish-service');
-const awsUploadFile = require('./aws-controller');
+const AwsController = require('./aws-controller');
 const mime = require('mime-types');
 const generateFileId = require('../utils/generate-file-id');
 const WishModel = require('../models/wish-model');
 const ApiError = require('../exceptions/api-error');
 
-//awsUploadFile existingFiles:  [
-//    {
-//        Key: 'user-65d2dfa97d086909187aa833/wish-з_карт/image-95a6fc751c1b8b6ae79627b7a4f5f5a3.jpeg',
-//        LastModified: 2024-02-23T07:55:54.000Z,
-//        ETag: '"95a6fc751c1b8b6ae79627b7a4f5f5a3"',
-//        ChecksumAlgorithm: [],
-//        Size: 91320,
-//        StorageClass: 'STANDARD'
-//    }
-//]
+const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s!"№#$%&()*,-;=?@_]*$/;
 
-// 'user-65d2dfa97d086909187aa833/avatar/95a6fc751c1b8b6ae79627b7a4f5f5a3.jpeg'
-// 'user-65d2dfa97d086909187aa833/wish-з_карт/image-95a6fc751c1b8b6ae79627b7a4f5f5a3.jpeg'
-// 'user-65d2dfa97d086909187aa833/wish-з_карт/image-95a6fc751c1b8b6ae79627b7a4f5f5a3.jpeg'
+const protocol = 'https://';
+const getPathWithoutImageName = (originalUrl) => {
+    const urlWithoutProtocol = originalUrl.replace(protocol, '');
+    return `${protocol}${urlWithoutProtocol.split('/')[0]}/${urlWithoutProtocol.split('/')[1]}/${urlWithoutProtocol.split('/')[2]}`;
+};
+const getImageName = (originalUrl) => {
+    const urlWithoutProtocol = originalUrl.replace(protocol, '');
+    return urlWithoutProtocol.split('/')[3];
+};
+const getImageIdWithExtension = (url) => {
+    return getImageName(url).split('_')[1];
+};
+const getImageNameWithPosition = (url) => {
+    return getImageName(url).split('_')[0];
+};
 
-class UserController {
+class WishController {
     async createWish(req, res, next) {
         try {
             const { userId, name, price, description } = req.body;
 
-            const nameRegex = /^[a-zA-Zа-яА-Я0-9\s!"№#$%&'()*,-;=?@_]*$/;
             if (!nameRegex.test(name)) {
                 return next(ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`));
             }
@@ -36,25 +38,110 @@ class UserController {
             }
 
             const images = [];
-
-            const fileValues = Object.values(req.files);
-
-            for (let i = 0; i < fileValues.length; i++) {
-                const image = await awsUploadFile(
-                    'false',
-                    fileValues[i][0],
-                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/image-${generateFileId(fileValues[i][0].buffer)}.${mime.extension(fileValues[i][0].mimetype)}`,
-                    userId,
+            const files = req.files;
+            for (const key in files) {
+                const image = await AwsController.uploadFile(
+                    files[key][0],
+                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${key}_${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
                     next,
                 );
 
                 images.push({
                     path: image,
-                    name: `image-${i + 1}`,
+                    name: key,
                 });
             }
 
             const wish = await wishService.createWish(userId, name, price, description, images);
+
+            return res.json(wish);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updateWish(req, res, next) {
+        try {
+            const body = req.body;
+            if (!nameRegex.test(body.name)) {
+                return next(ApiError.BadRequest(`Назва бажання "${body.name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`));
+            }
+
+            const allImages = [];
+            for (const key in body) {
+                if (key.includes('image')) {
+                    if (body[key] === '"delete"') {
+                        const result = await AwsController.deleteFile(
+                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${key}`,
+                            next,
+                        );
+                        allImages.push({
+                            path: result,
+                            name: key,
+                        });
+                    } else {
+                        allImages.push({
+                            path: JSON.parse(body[key]).path,
+                            name: key,
+                        });
+                    }
+                }
+            }
+            const files = req.files;
+            for (const key in files) {
+                const image = await AwsController.uploadFile(
+                    files[key][0],
+                    `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${key}_${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
+                    next,
+                );
+
+                allImages.push({
+                    path: image,
+                    name: key,
+                });
+            }
+            allImages.sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            });
+
+            const imagesWithoutDeleted = [];
+            let shift = 0;
+            for (let i = 0; i < allImages.length; i++) {
+                if (allImages[i].path === 'deleted') {
+                    shift++;
+                } else {
+                    imagesWithoutDeleted.push({
+                        ...allImages[i],
+                        name: `image-${i + 1 - shift}`,
+                    });
+                }
+            }
+
+            const imagesResult = [];
+            if (shift > 0) {
+                for (let i = 0; i < imagesWithoutDeleted.length; i++) {
+                    const image = imagesWithoutDeleted[i];
+                    const newKey = `image-${i + 1}`;
+                    if (getImageNameWithPosition(image.path) !== newKey) {
+                        await AwsController.renameFile(
+                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${getImageNameWithPosition(image.path)}_${getImageIdWithExtension(image.path)}`,
+                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${newKey}_${getImageIdWithExtension(image.path)}`,
+                            next,
+                        );
+
+                        imagesResult.push({
+                            ...image,
+                            path: `${getPathWithoutImageName(image.path)}/${newKey}_${getImageIdWithExtension(image.path)}`,
+                        });
+                    } else {
+                        imagesResult.push(image);
+                    }
+                }
+            } else {
+                imagesResult.push(...imagesWithoutDeleted);
+            }
+
+            const wish = await wishService.updateWish(body.id, body.name, body.price, body.description, imagesResult);
 
             return res.json(wish);
         } catch (error) {
@@ -75,4 +162,4 @@ class UserController {
     }
 }
 
-module.exports = new UserController();
+module.exports = new WishController();
