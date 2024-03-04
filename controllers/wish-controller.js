@@ -114,7 +114,7 @@ class WishController {
                 } else {
                     imagesWithoutDeleted.push({
                         ...allImages[i],
-                        position: i + 1 - shift,
+                        position: i - shift,
                     });
                 }
             }

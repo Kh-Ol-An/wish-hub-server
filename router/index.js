@@ -15,7 +15,7 @@ const authMiddleware = require('../middlewares/auth-middleware');
 
 const upload = multer();
 
-const fields = Array.from({ length: 10 }, (_, index) => ({ name: `image-${index + 1}` }));
+const fields = Array.from({ length: 10 }, (_, index) => ({ name: `image-${index}` }));
 
 const router = new Router();
 
