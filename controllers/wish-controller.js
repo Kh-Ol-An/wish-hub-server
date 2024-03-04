@@ -9,19 +9,51 @@ const ApiError = require('../exceptions/api-error');
 class WishController {
     static nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s!"№#$%&()*,-;=?@_]*$/;
 
+    static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+
     static getImageId(url) {
         const urlWithoutProtocol = url.replace('https://', '');
         const imageName = urlWithoutProtocol.split('/')[3];
         return imageName.split('_')[0];
     };
 
+    static isAllowedExtension(filename) {
+        const extension = filename.split('.').pop().toLowerCase();
+        return WishController.ALLOWED_EXTENSIONS.includes(extension);
+    };
+
+    static wishValidator(name, imageLength) {
+        if (!WishController.nameRegex.test(name)) {
+            throw ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`);
+        }
+
+        if (imageLength > process.env.MAX_NUMBER_OF_FILES) {
+            throw ApiError.BadRequest(`Ви намагаєтесь завантажити ${imageLength} файлів. Максимальна кількість файлів для завантаження ${process.env.MAX_NUMBER_OF_FILES}`);
+        }
+    };
+
+    static fileValidator(file) {
+        if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
+            throw ApiError.BadRequest(`Один з файлів які ви завантажуєте розміром ${(file.size / 1024 / 1024).toFixed(2)} МБ. Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`);
+        }
+
+        if (!WishController.isAllowedExtension(file.originalname)) {
+            throw ApiError.BadRequest(
+                `Один з файлів які ви завантажуєте з розширенням "${
+                    mime.extension(file.mimetype)
+                }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
+                    WishController.ALLOWED_EXTENSIONS.join(', ')
+                }"`
+            );
+        }
+    };
+
     async createWish(req, res, next) {
         try {
             const { userId, name, price, description } = req.body;
+            const files = req.files;
 
-            if (!WishController.nameRegex.test(name)) {
-                return next(ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`));
-            }
+            WishController.wishValidator(name, Object.keys(files).length);
 
             const potentialWish = await WishModel.findOne({ user: userId, name });
             if (potentialWish) {
@@ -29,11 +61,12 @@ class WishController {
             }
 
             const images = [];
-            const files = req.files;
             for (const key in files) {
+                const file = files[key][0];
+                WishController.fileValidator(file);
                 const image = await AwsController.uploadFile(
-                    files[key][0],
-                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
+                    file,
+                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
                     next,
                 );
 
@@ -54,9 +87,19 @@ class WishController {
     async updateWish(req, res, next) {
         try {
             const body = req.body;
-            if (!WishController.nameRegex.test(body.name)) {
-                return next(ApiError.BadRequest(`Назва бажання "${body.name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`));
+            const files = req.files;
+
+            let uploadedImageLength = 0;
+            for (const key in body) {
+                if (key.includes('image')) {
+                    // рахуємо тільки ті картинки, які не підлягають видаленню
+                    if (!JSON.parse(body[key]).delete) {
+                        uploadedImageLength++;
+                    }
+                }
             }
+            const filesLength = Object.keys(files).length;
+            WishController.wishValidator(body.name, uploadedImageLength + filesLength);
 
             const potentialWish = await WishModel.findOne({ user: body.userId, name: body.name });
             if (potentialWish) {
@@ -67,6 +110,22 @@ class WishController {
             }
 
             const allImages = [];
+            // якщо є нові картинки, то додаємо їх до бази Amazon S3
+            for (const key in files) {
+                const file = files[key][0];
+                WishController.fileValidator(file);
+                const path = await AwsController.uploadFile(
+                    file,
+                    `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${key}_${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
+                    next,
+                );
+
+                // додаємо картинку до загального масиву з валідною позицією
+                allImages.push({
+                    path,
+                    position: Number(key.split('-')[1]),
+                });
+            }
             // проходимось по всіх полях, які містять дані про картинки
             for (const key in body) {
                 if (key.includes('image')) {
@@ -85,21 +144,6 @@ class WishController {
                         position: Number(key.split('-')[1]),
                     });
                 }
-            }
-            const files = req.files;
-            // якщо є нові картинки, то додаємо їх до бази Amazon S3
-            for (const key in files) {
-                const path = await AwsController.uploadFile(
-                    files[key][0],
-                    `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${key}_${generateFileId(files[key][0].buffer)}.${mime.extension(files[key][0].mimetype)}`,
-                    next,
-                );
-
-                // додаємо картинку до загального масиву з валідною позицією
-                allImages.push({
-                    path,
-                    position: Number(key.split('-')[1]),
-                });
             }
 
             // сортуємо всі картинки за позицією

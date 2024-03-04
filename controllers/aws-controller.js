@@ -8,29 +8,9 @@ const s3 = new AWS.S3({
     region: process.env.AWS_SDK_REGION,
 });
 
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
-
-const isAllowedExtension = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    return ALLOWED_EXTENSIONS.includes(extension);
-}
 class AwsController {
     async uploadFile(file, paramsKey, next) {
         try {
-            if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
-                return next(ApiError.BadRequest(`Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`));
-            }
-
-            if (!isAllowedExtension(file.originalname)) {
-                return next(ApiError.BadRequest(
-                    `Файл з розширенням "${
-                        mime.extension(file.mimetype)
-                    }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
-                        ALLOWED_EXTENSIONS.join(', ')
-                    }"`
-                ));
-            }
-
             const params = {
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
                 Key: paramsKey,
@@ -48,20 +28,6 @@ class AwsController {
 
     async updateFile(file, prefixPath, paramsKey, userId, next) {
         try {
-            if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
-                return next(ApiError.BadRequest(`Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`));
-            }
-
-            if (!isAllowedExtension(file.originalname)) {
-                return next(ApiError.BadRequest(
-                    `Файл з розширенням "${
-                        mime.extension(file.mimetype)
-                    }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
-                        ALLOWED_EXTENSIONS.join(', ')
-                    }"`
-                ));
-            }
-
             const existingFiles = await s3.listObjectsV2({
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
                 Prefix: prefixPath,

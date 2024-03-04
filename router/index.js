@@ -15,7 +15,11 @@ const authMiddleware = require('../middlewares/auth-middleware');
 
 const upload = multer();
 
-const fields = Array.from({ length: 10 }, (_, index) => ({ name: `image-${index}` }));
+const fields = Array.from(
+    // додаємо одиницю до MAX_NUMBER_OF_FILES спеціально щоб відпрацював не multer, а wishValidator в разі перевищення максимальної кількості завантажувальних файлів
+    { length: process.env.MAX_NUMBER_OF_FILES + 1 },
+    (_, index) => ({ name: `image-${index}` }),
+);
 
 const router = new Router();
 
