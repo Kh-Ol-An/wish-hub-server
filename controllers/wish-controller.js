@@ -7,8 +7,6 @@ const WishModel = require('../models/wish-model');
 const ApiError = require('../exceptions/api-error');
 
 class WishController {
-    static nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s!"№#$%&()*,-;=?@_]*$/;
-
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
 
     static getImageId(url) {
@@ -23,8 +21,9 @@ class WishController {
     };
 
     static wishValidator(name, imageLength) {
-        if (!WishController.nameRegex.test(name)) {
-            throw ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського та кириличного алфавітів (великі та малі), цифри, пробіли та наступні символи: ${nameRegex}`);
+        const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s-!"№#$%&()*,;=?@_]*$/;
+        if (!nameRegex.test(name)) {
+            throw ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського або кириличного алфавітів, цифри, пробіли та наступні символи: -!"№#$%&()*,;=?@_`);
         }
 
         if (imageLength > process.env.MAX_NUMBER_OF_FILES) {
