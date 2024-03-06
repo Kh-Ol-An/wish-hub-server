@@ -68,7 +68,7 @@ class AwsController {
                 Key: existingFiles.Contents[0].Key,
             }).promise();
 
-            return 'deleted';
+            return '';
         } catch (error) {
             return next(ApiError.BadRequest(`Помилка при видаленні файлу на Amazon S3: ${error}`));
         }
