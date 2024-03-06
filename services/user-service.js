@@ -93,7 +93,7 @@ class UserService {
         return users.map((user) => new UserDto(user));
     }
 
-    async updateMyUser(id, firstName, birthday, avatar) {
+    async updateMyUser(id, firstName, lastName, birthday, avatar) {
         const convertedId = new ObjectId(id);
         const user = await UserModel.findById(convertedId);
 
@@ -101,6 +101,7 @@ class UserService {
             throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
         }
         user.firstName = firstName;
+        user.lastName = lastName;
         user.birthday = birthday;
         avatar !== null && (user.avatar = avatar);
         await user.save();

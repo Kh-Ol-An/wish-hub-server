@@ -85,7 +85,7 @@ class UserController {
 
     async updateMyUser(req, res, next) {
         try {
-            const { id, firstName, birthday, avatar } = req.body;
+            const { id, firstName, lastName, birthday, avatar } = req.body;
             const file = req.file;
 
             let avatarPath = avatar;
@@ -105,7 +105,7 @@ class UserController {
                 );
             }
 
-            const user = await userService.updateMyUser(id, firstName, birthday, avatarPath);
+            const user = await userService.updateMyUser(id, firstName, lastName, birthday, avatarPath);
 
             return res.json(user);
         } catch (error) {
