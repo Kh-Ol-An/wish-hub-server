@@ -1,11 +1,12 @@
 const { Schema, model } = require('mongoose');
 
 const UserSchema = new Schema({
-    name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    birthday: { type: Date },
+    firstName: { type: String, required: true },
+    lastName: { type: String },
     avatar: { type: String },
+    birthday: { type: Date },
     wishList: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
     isActivated: { type: Boolean, default: false },
     activationLink: { type: String },

@@ -1,24 +1,26 @@
 class UserDto {
-    name;
+    id;
     email;
-    birthday;
+    firstName;
+    lastName;
     avatar;
+    birthday;
     wishList;
+    isActivated;
     createdAt;
     updatedAt;
-    id;
-    isActivated;
 
     constructor(model) {
-        this.name = model.name;
+        this.id = model._id;
         this.email = model.email;
-        this.birthday = model.birthday;
+        this.firstName = model.firstName;
+        this.lastName = model.lastName;
         this.avatar = model.avatar;
+        this.birthday = model.birthday;
         this.wishList = model.wishList;
+        this.isActivated = model.isActivated;
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
-        this.id = model._id;
-        this.isActivated = model.isActivated;
     }
 }
 

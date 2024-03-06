@@ -13,8 +13,8 @@ class UserController {
                 return next(ApiError.BadRequest('Помилка при валідації', errors.array()));
             }
 
-            const { name, email, password } = req.body;
-            const userData = await userService.registration(name, email, password);
+            const { firstName, email, password } = req.body;
+            const userData = await userService.registration(firstName, email, password);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -85,7 +85,7 @@ class UserController {
 
     async updateMyUser(req, res, next) {
         try {
-            const { id, name, birthday, avatar } = req.body;
+            const { id, firstName, birthday, avatar } = req.body;
             const file = req.file;
 
             let avatarPath = avatar;
@@ -105,7 +105,7 @@ class UserController {
                 );
             }
 
-            const user = await userService.updateMyUser(id, name, birthday, avatarPath);
+            const user = await userService.updateMyUser(id, firstName, birthday, avatarPath);
 
             return res.json(user);
         } catch (error) {

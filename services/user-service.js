@@ -8,7 +8,7 @@ const UserDto = require("../dtos/user-dto");
 const ApiError = require("../exceptions/api-error");
 
 class UserService {
-    async registration(name, email, password) {
+    async registration(firstName, email, password) {
         const candidate = await UserModel.findOne({ email });
         if (candidate) {
             throw ApiError.BadRequest(`Користувач з електронною адресою ${email} вже існує`);
@@ -17,7 +17,7 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 3);
         const activationLink = uuid.v4();
 
-        const user = await UserModel.create({ name, email, password: hashPassword, activationLink });
+        const user = await UserModel.create({ firstName, email, password: hashPassword, activationLink });
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user);
@@ -93,14 +93,14 @@ class UserService {
         return users.map((user) => new UserDto(user));
     }
 
-    async updateMyUser(id, name, birthday, avatar) {
+    async updateMyUser(id, firstName, birthday, avatar) {
         const convertedId = new ObjectId(id);
         const user = await UserModel.findById(convertedId);
 
         if (!user) {
             throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
         }
-        user.name = name;
+        user.firstName = firstName;
         user.birthday = birthday;
         avatar !== null && (user.avatar = avatar);
         await user.save();
