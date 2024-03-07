@@ -5,13 +5,13 @@ const WishDto = require("../dtos/wish-dto");
 const ApiError = require("../exceptions/api-error");
 
 class WishService {
-    async createWish(userId, name, price, link, description, images) {
+    async createWish(userId, material, name, price, link, description, images) {
         const user = await UserModel.findById(userId);
         if (!user) {
             throw new Error('Користувач не знайдений');
         }
 
-        const wish = await WishModel.create({ user: userId, name, price, link, description, images });
+        const wish = await WishModel.create({ user: userId, material, name, price, link, description, images });
 
         user.wishList.push(wish.id);
         await user.save();
@@ -20,7 +20,7 @@ class WishService {
     };
 
 
-    async updateWish(id, name, price, link, description, images) {
+    async updateWish(id, material, name, price, link, description, images) {
         const convertedId = new ObjectId(id);
         const wish = await WishModel.findById(convertedId);
 
@@ -28,6 +28,7 @@ class WishService {
             throw ApiError.BadRequest(`Бажання з id: "${id}" не знайдено`);
         }
 
+        wish.material = material;
         wish.name = name;
         wish.price = price;
         wish.link = link;

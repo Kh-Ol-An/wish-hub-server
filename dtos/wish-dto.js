@@ -14,6 +14,7 @@ class ImageDto {
 
 class WishDto {
     id;
+    material;
     name;
     price;
     link;
@@ -24,6 +25,7 @@ class WishDto {
 
     constructor(model) {
         this.id = model._id;
+        this.material = model.material;
         this.name = model.name;
         this.price = model.price;
         this.link = model.link;
