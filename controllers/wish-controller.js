@@ -49,7 +49,7 @@ class WishController {
 
     async createWish(req, res, next) {
         try {
-            const { userId, name, price, description } = req.body;
+            const { userId, name, price, link, description } = req.body;
             const files = req.files;
 
             WishController.wishValidator(name, Object.keys(files).length);
@@ -75,7 +75,7 @@ class WishController {
                 });
             }
 
-            const wish = await wishService.createWish(userId, name, price, description, images);
+            const wish = await wishService.createWish(userId, name, price, link, description, images);
 
             return res.json(wish);
         } catch (error) {
@@ -162,7 +162,14 @@ class WishController {
                 }
             }
 
-            const wish = await wishService.updateWish(body.id, body.name, body.price, body.description, imagesWithoutDeleted);
+            const wish = await wishService.updateWish(
+                body.id,
+                body.name,
+                body.price,
+                body.link,
+                body.description,
+                imagesWithoutDeleted,
+            );
 
             return res.json(wish);
         } catch (error) {
