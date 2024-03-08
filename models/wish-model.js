@@ -9,6 +9,7 @@ const ImageSchema = new Schema({
 const WishSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     material: { type: Boolean, required: true },
+    show: { type: String, required: true, enum: ['all', 'friends', 'nobody'] },
     name: { type: String, required: true },
     price: {
         type: String,
