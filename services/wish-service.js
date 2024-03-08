@@ -3,6 +3,8 @@ const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
 const WishDto = require("../dtos/wish-dto");
 const ApiError = require("../exceptions/api-error");
+const AwsController = require("../controllers/aws-controller");
+const getImageId = require("../utils/get-image-id");
 
 class WishService {
     async createWish(userId, material, name, price, link, description, images) {
@@ -47,7 +49,7 @@ class WishService {
         return user.wishList.map(wish => new WishDto(wish));
     };
 
-    async deleteWish(userId, wishId) {
+    async deleteWish(userId, wishId, next) {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -59,9 +61,16 @@ class WishService {
         if (!deletedWish) {
             throw new Error('Бажання не знайдено');
         }
+        for (let i = 0; i < deletedWish.images.length; i++) {
+            const image = deletedWish.images[i];
+            await AwsController.deleteFile(
+                `user-${user._id}/wish-${deletedWish.name.replace(/\s+/g, '_')}/${getImageId(image.path)}`,
+                next,
+            );
+        }
 
         // Знайдіть індекс бажання в масиві wishList користувача і видаліть його
-        const index = user.wishList.indexOf(deletedWish.id);
+        const index = user.wishList.indexOf(deletedWish._id);
         if (index !== -1) {
             user.wishList.splice(index, 1);
         }
@@ -69,7 +78,7 @@ class WishService {
         // Збережіть зміни
         await user.save();
 
-        return deletedWish.id;
+        return deletedWish._id;
     };
 }
 

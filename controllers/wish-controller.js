@@ -5,15 +5,10 @@ const AwsController = require('./aws-controller');
 const generateFileId = require('../utils/generate-file-id');
 const WishModel = require('../models/wish-model');
 const ApiError = require('../exceptions/api-error');
+const getImageId = require("../utils/get-image-id");
 
 class WishController {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
-
-    static getImageId(url) {
-        const urlWithoutProtocol = url.replace('https://', '');
-        const imageName = urlWithoutProtocol.split('/')[3];
-        return imageName.split('_')[0];
-    };
 
     static isAllowedExtension(filename) {
         const extension = filename.split('.').pop().toLowerCase();
@@ -132,7 +127,7 @@ class WishController {
                     const parsedImage = JSON.parse(body[key]);
                     if (parsedImage.delete) {
                         await AwsController.deleteFile(
-                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${WishController.getImageId(parsedImage.path)}`,
+                            `user-${body.userId}/wish-${body.name.replace(/\s+/g, '_')}/${getImageId(parsedImage.path)}`,
                             next,
                         );
                     }
@@ -194,7 +189,7 @@ class WishController {
         try {
             const { userId, wishId } = req.query;
 
-            const deletedWishId = await wishService.deleteWish(userId, wishId);
+            const deletedWishId = await wishService.deleteWish(userId, wishId, next);
 
             return res.json(deletedWishId);
         } catch (error) {
