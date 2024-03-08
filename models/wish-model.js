@@ -10,7 +10,12 @@ const WishSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     material: { type: Boolean, required: true },
     name: { type: String, required: true },
-    price: { type: String, required: true },
+    price: {
+        type: String,
+        required: function() {
+            return this.material;
+        }
+    },
     link:  { type: String },
     description: { type: String },
     images: [ImageSchema],
