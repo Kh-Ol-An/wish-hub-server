@@ -19,7 +19,6 @@ class WishService {
         return new WishDto(wish);
     };
 
-
     async updateWish(id, material, name, price, link, description, images) {
         const convertedId = new ObjectId(id);
         const wish = await WishModel.findById(convertedId);
@@ -46,6 +45,31 @@ class WishService {
             throw new Error('Користувач не знайдений');
         }
         return user.wishList.map(wish => new WishDto(wish));
+    };
+
+    async deleteWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error('Користувач не знайдений');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const deletedWish = await WishModel.findByIdAndDelete(wishId);
+        if (!deletedWish) {
+            throw new Error('Бажання не знайдено');
+        }
+
+        // Знайдіть індекс бажання в масиві wishList користувача і видаліть його
+        const index = user.wishList.indexOf(deletedWish.id);
+        if (index !== -1) {
+            user.wishList.splice(index, 1);
+        }
+
+        // Збережіть зміни
+        await user.save();
+
+        return deletedWish.id;
     };
 }
 

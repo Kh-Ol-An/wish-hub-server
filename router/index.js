@@ -9,7 +9,7 @@ const {
     getUsers,
     updateMyUser,
 } = require('../controllers/user-controller');
-const { createWish, updateWish, getWishList } = require('../controllers/wish-controller');
+const { createWish, updateWish, getWishList, deleteWish } = require('../controllers/wish-controller');
 const { body } = require('express-validator');
 const authMiddleware = require('../middlewares/auth-middleware');
 
@@ -37,6 +37,7 @@ router.get('/users', authMiddleware, getUsers);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.get('/wishes', authMiddleware, getWishList);
+router.delete('/wish', authMiddleware, deleteWish);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
 
 module.exports = router;

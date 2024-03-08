@@ -189,6 +189,18 @@ class WishController {
             next(error);
         }
     }
+
+    async deleteWish(req, res, next) {
+        try {
+            const { userId, wishId } = req.query;
+
+            const deletedWishId = await wishService.deleteWish(userId, wishId);
+
+            return res.json(deletedWishId);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new WishController();
