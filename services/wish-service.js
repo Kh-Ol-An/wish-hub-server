@@ -7,13 +7,13 @@ const AwsController = require("../controllers/aws-controller");
 const getImageId = require("../utils/get-image-id");
 
 class WishService {
-    async createWish(userId, material, show, name, price, link, description, images) {
+    async createWish(userId, material, show, name, price, address, description, images) {
         const user = await UserModel.findById(userId);
         if (!user) {
             throw new Error('Користувач не знайдений');
         }
 
-        const wish = await WishModel.create({ user: userId, material, show, name, price, link, description, images });
+        const wish = await WishModel.create({ user: userId, material, show, name, price, address, description, images });
 
         user.wishList.push(wish.id);
         await user.save();
@@ -21,7 +21,7 @@ class WishService {
         return new WishDto(wish);
     };
 
-    async updateWish(id, material, show, name, price, link, description, images) {
+    async updateWish(id, material, show, name, price, address, description, images) {
         const convertedId = new ObjectId(id);
         const wish = await WishModel.findById(convertedId);
 
@@ -33,7 +33,7 @@ class WishService {
         wish.show = show;
         wish.name = name;
         wish.price = price;
-        wish.link = link;
+        wish.address = address;
         wish.description = description;
         wish.images = images.map(image => ({ ...image, path: image.path }));
 

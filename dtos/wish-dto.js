@@ -18,7 +18,7 @@ class WishDto {
     show;
     name;
     price;
-    link;
+    address;
     description;
     images;
     createdAt;
@@ -30,7 +30,7 @@ class WishDto {
         this.show = model.show;
         this.name = model.name;
         this.price = model.price;
-        this.link = model.link;
+        this.address = model.address;
         this.description = model.description;
         this.images = model.images.map(image => new ImageDto(image));
         this.createdAt = model.createdAt;

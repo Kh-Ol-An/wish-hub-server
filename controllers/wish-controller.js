@@ -44,7 +44,7 @@ class WishController {
 
     async createWish(req, res, next) {
         try {
-            const { userId, material, show, name, price, link, description } = req.body;
+            const { userId, material, show, name, price, address, description } = req.body;
             const files = req.files;
 
             WishController.wishValidator(name, Object.keys(files).length);
@@ -70,7 +70,7 @@ class WishController {
                 });
             }
 
-            const wish = await wishService.createWish(userId, material, show, name, price, link, description, images);
+            const wish = await wishService.createWish(userId, material, show, name, price, address, description, images);
 
             return res.json(wish);
         } catch (error) {
@@ -163,7 +163,7 @@ class WishController {
                 body.show,
                 body.name,
                 body.price,
-                body.link,
+                body.address,
                 body.description,
                 imagesWithoutDeleted,
             );

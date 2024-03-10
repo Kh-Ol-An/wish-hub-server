@@ -17,7 +17,7 @@ const WishSchema = new Schema({
             return this.material;
         }
     },
-    link:  { type: String },
+    address:  { type: String },
     description: { type: String },
     images: [ImageSchema],
     createdAt: { type: Date, default: Date.now },
