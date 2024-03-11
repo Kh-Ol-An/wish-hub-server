@@ -8,6 +8,8 @@ const {
     logout,
     getUsers,
     updateMyUser,
+    addFriend,
+    deleteFriend,
 } = require('../controllers/user-controller');
 const { createWish, updateWish, getWishList, deleteWish } = require('../controllers/wish-controller');
 const { body } = require('express-validator');
@@ -34,10 +36,12 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
+router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
+router.post('/friend', authMiddleware, addFriend);
+router.delete('/friend', authMiddleware, deleteFriend);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.get('/wishes', authMiddleware, getWishList);
 router.delete('/wish', authMiddleware, deleteWish);
-router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
 
 module.exports = router;

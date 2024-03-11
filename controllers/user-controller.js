@@ -112,6 +112,30 @@ class UserController {
             next(error);
         }
     }
+
+    async addFriend(req, res, next) {
+        try {
+            const { myId, friendId } = req.body;
+
+            const bothUsers = await userService.addFriend(myId, friendId);
+
+            return res.json(bothUsers);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteFriend(req, res, next) {
+        try {
+            const { myId, friendId } = req.body;
+
+            const bothUserIds = await userService.deleteFriend(myId, friendId);
+
+            return res.json(bothUserIds);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new UserController();

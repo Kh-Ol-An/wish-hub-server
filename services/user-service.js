@@ -108,6 +108,60 @@ class UserService {
 
         return new UserDto(user);
     }
+
+    async addFriend(myId, friendId) {
+        const convertedMyId = new ObjectId(myId);
+        const myUser = await UserModel.findById(convertedMyId);
+        if (!myUser) {
+            throw ApiError.BadRequest(`Користувача з id: "${myId}" не знайдено`);
+        }
+
+        const convertedFriendId = new ObjectId(friendId);
+        const friendUser = await UserModel.findById(convertedFriendId);
+        if (!friendUser) {
+            throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
+        }
+
+        if (myUser.friendRequestsTo.includes(friendUser.id) && friendUser.friendRequestsFrom.includes(myUser.id)) {
+            myUser.friends.push(friendUser.id);
+            friendUser.friends.push(myUser.id);
+        } else {
+            myUser.friendRequestsTo.push(friendUser.id);
+            friendUser.friendRequestsFrom.push(myUser.id);
+        }
+
+        await myUser.save();
+        await friendUser.save();
+
+        return [new UserDto(myUser), new UserDto(friendUser)];
+    }
+
+    async deleteFriend(myId, friendId) {
+        const convertedMyId = new ObjectId(myId);
+        const myUser = await UserModel.findById(convertedMyId);
+        if (!myUser) {
+            throw ApiError.BadRequest(`Користувача з id: "${myId}" не знайдено`);
+        }
+
+        const convertedFriendId = new ObjectId(friendId);
+        const friendUser = await UserModel.findById(convertedFriendId);
+        if (!friendUser) {
+            throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
+        }
+
+//        if (myUser.friendRequestsTo.includes(friendUser.id) && friendUser.friendRequestsFrom.includes(myUser.id)) {
+//            myUser.friends.push(friendUser.id);
+//            friendUser.friends.push(myUser.id);
+//        } else {
+//            myUser.friendRequestsTo.push(friendUser.id);
+//            friendUser.friendRequestsFrom.push(myUser.id);
+//        }
+
+        await myUser.save();
+        await friendUser.save();
+
+//        return [new UserDto(myUser), new UserDto(friendUser)];
+    }
 }
 
 module.exports = new UserService();

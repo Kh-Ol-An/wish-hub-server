@@ -8,6 +8,9 @@ const UserSchema = new Schema({
     avatar: { type: String },
     birthday: { type: Date },
     wishList: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
+    friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // двосторонній запит
+    friendRequestsFrom: [{ type: Schema.Types.ObjectId, ref: 'User' }], // слідкують за мною
+    friendRequestsTo: [{ type: Schema.Types.ObjectId, ref: 'User' }], // я за ними слідкую
     isActivated: { type: Boolean, default: false },
     activationLink: { type: String },
     createdAt: { type: Date, default: Date.now },
