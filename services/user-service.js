@@ -110,14 +110,12 @@ class UserService {
     }
 
     async addFriend(myId, friendId) {
-        const convertedMyId = new ObjectId(myId);
-        const myUser = await UserModel.findById(convertedMyId);
+        const myUser = await UserModel.findById(new ObjectId(myId));
         if (!myUser) {
             throw ApiError.BadRequest(`Користувача з id: "${myId}" не знайдено`);
         }
 
-        const convertedFriendId = new ObjectId(friendId);
-        const friendUser = await UserModel.findById(convertedFriendId);
+        const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
             throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
         }
@@ -138,26 +136,31 @@ class UserService {
         return new UserDto(myUser);
     }
 
-    async deleteFriend(myId, friendId) {
-        const convertedMyId = new ObjectId(myId);
-        const myUser = await UserModel.findById(convertedMyId);
+    async removeFriend(myId, friendId, whereRemove) {
+        const myUser = await UserModel.findById(new ObjectId(myId));
         if (!myUser) {
             throw ApiError.BadRequest(`Користувача з id: "${myId}" не знайдено`);
         }
 
-        const convertedFriendId = new ObjectId(friendId);
-        const friendUser = await UserModel.findById(convertedFriendId);
+        const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
             throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
         }
 
-//        if (myUser.followTo.includes(friendUser.id) && friendUser.followFrom.includes(myUser.id)) {
-//            myUser.friends.push(friendUser.id);
-//            friendUser.friends.push(myUser.id);
-//        } else {
-//            myUser.followTo.push(friendUser.id);
-//            friendUser.followFrom.push(myUser.id);
-//        }
+        if (whereRemove === 'friends') {
+           myUser.friends && myUser.friends.filter(friendUser.id);
+           friendUser.friends && friendUser.friends.filter(myUser.id);
+        }
+
+        if (whereRemove === 'followFrom') {
+           myUser.followFrom && myUser.followFrom.filter(friendUser.id);
+           friendUser.followTo && friendUser.followTo.filter(myUser.id);
+        }
+
+        if (whereRemove === 'followTo') {
+           myUser.followTo && myUser.followTo.filter(friendUser.id);
+           friendUser.followFrom && friendUser.followFrom.filter(myUser.id);
+        }
 
         await myUser.save();
         await friendUser.save();

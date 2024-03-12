@@ -125,13 +125,13 @@ class UserController {
         }
     }
 
-    async deleteFriend(req, res, next) {
+    async removeFriend(req, res, next) {
         try {
-            const { myId, friendId } = req.body;
+            const { myId, friendId, whereRemove } = req.body;
 
-            const deletedFriendId = await userService.deleteFriend(myId, friendId);
+            const myUser = await userService.removeFriend(myId, friendId, whereRemove);
 
-            return res.json(deletedFriendId);
+            return res.json(myUser);
         } catch (error) {
             next(error);
         }

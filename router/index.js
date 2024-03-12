@@ -9,7 +9,7 @@ const {
     getUsers,
     updateMyUser,
     addFriend,
-    deleteFriend,
+    removeFriend,
 } = require('../controllers/user-controller');
 const { createWish, updateWish, getWishList, deleteWish } = require('../controllers/wish-controller');
 const { body } = require('express-validator');
@@ -38,7 +38,7 @@ router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
 router.post('/friend', authMiddleware, addFriend);
-router.delete('/friend', authMiddleware, deleteFriend);
+router.delete('/friend', authMiddleware, removeFriend);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.get('/wishes', authMiddleware, getWishList);
