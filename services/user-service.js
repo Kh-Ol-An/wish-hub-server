@@ -148,18 +148,36 @@ class UserService {
         }
 
         if (whereRemove === 'friends') {
-           myUser.friends && myUser.friends.filter(friendUser.id);
-           friendUser.friends && friendUser.friends.filter(myUser.id);
-        }
-
-        if (whereRemove === 'followFrom') {
-           myUser.followFrom && myUser.followFrom.filter(friendUser.id);
-           friendUser.followTo && friendUser.followTo.filter(myUser.id);
+            myUser.friends = myUser.friends.filter(id => id.toString() !== friendUser.id);
+            friendUser.friends = friendUser.friends.filter(id => id.toString() !== myUser.id);
         }
 
         if (whereRemove === 'followTo') {
-           myUser.followTo && myUser.followTo.filter(friendUser.id);
-           friendUser.followFrom && friendUser.followFrom.filter(myUser.id);
+            if (myUser.friends.includes(friendUser.id) && friendUser.friends.includes(myUser.id)) {
+                myUser.friends = myUser.friends.filter(id => id.toString() !== friendUser.id);
+                friendUser.friends = friendUser.friends.filter(id => id.toString() !== myUser.id);
+                myUser.followFrom.push(friendUser.id);
+                friendUser.followTo.push(myUser.id);
+            }
+
+            if (myUser.followTo.includes(friendUser.id) && friendUser.followFrom.includes(myUser.id)) {
+                myUser.followTo = myUser.followTo.filter(id => id.toString() !== friendUser.id);
+                friendUser.followFrom = friendUser.followFrom.filter(id => id.toString() !== myUser.id);
+            }
+        }
+
+        if (whereRemove === 'followFrom') {
+            if (myUser.friends.includes(friendUser.id) && friendUser.friends.includes(myUser.id)) {
+                myUser.friends = myUser.friends.filter(id => id.toString() !== friendUser.id);
+                friendUser.friends = friendUser.friends.filter(id => id.toString() !== myUser.id);
+                myUser.followTo.push(friendUser.id);
+                friendUser.followFrom.push(myUser.id);
+            }
+
+            if (myUser.followFrom.includes(friendUser.id) && friendUser.followTo.includes(myUser.id)) {
+                myUser.followFrom = myUser.followFrom.filter(id => id.toString() !== friendUser.id);
+                friendUser.followTo = friendUser.followTo.filter(id => id.toString() !== myUser.id);
+            }
         }
 
         await myUser.save();
