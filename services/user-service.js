@@ -122,18 +122,20 @@ class UserService {
             throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
         }
 
-        if (myUser.friendRequestsTo.includes(friendUser.id) && friendUser.friendRequestsFrom.includes(myUser.id)) {
+        if (myUser.followFrom.includes(friendUser.id) && friendUser.followTo.includes(myUser.id)) {
             myUser.friends.push(friendUser.id);
+            myUser.followFrom = myUser.followFrom.filter((id) => id.toString() !== friendUser.id);
             friendUser.friends.push(myUser.id);
+            friendUser.followTo = friendUser.followTo.filter((id) => id.toString() !== myUser.id);
         } else {
-            myUser.friendRequestsTo.push(friendUser.id);
-            friendUser.friendRequestsFrom.push(myUser.id);
+            myUser.followTo.push(friendUser.id);
+            friendUser.followFrom.push(myUser.id);
         }
 
         await myUser.save();
         await friendUser.save();
 
-        return [new UserDto(myUser), new UserDto(friendUser)];
+        return new UserDto(myUser);
     }
 
     async deleteFriend(myId, friendId) {
@@ -149,18 +151,18 @@ class UserService {
             throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
         }
 
-//        if (myUser.friendRequestsTo.includes(friendUser.id) && friendUser.friendRequestsFrom.includes(myUser.id)) {
+//        if (myUser.followTo.includes(friendUser.id) && friendUser.followFrom.includes(myUser.id)) {
 //            myUser.friends.push(friendUser.id);
 //            friendUser.friends.push(myUser.id);
 //        } else {
-//            myUser.friendRequestsTo.push(friendUser.id);
-//            friendUser.friendRequestsFrom.push(myUser.id);
+//            myUser.followTo.push(friendUser.id);
+//            friendUser.followFrom.push(myUser.id);
 //        }
 
         await myUser.save();
         await friendUser.save();
 
-//        return [new UserDto(myUser), new UserDto(friendUser)];
+        return new UserDto(myUser);
     }
 }
 

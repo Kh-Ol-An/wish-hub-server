@@ -117,9 +117,9 @@ class UserController {
         try {
             const { myId, friendId } = req.body;
 
-            const bothUsers = await userService.addFriend(myId, friendId);
+            const myUser = await userService.addFriend(myId, friendId);
 
-            return res.json(bothUsers);
+            return res.json(myUser);
         } catch (error) {
             next(error);
         }
@@ -129,9 +129,9 @@ class UserController {
         try {
             const { myId, friendId } = req.body;
 
-            const bothUserIds = await userService.deleteFriend(myId, friendId);
+            const deletedFriendId = await userService.deleteFriend(myId, friendId);
 
-            return res.json(bothUserIds);
+            return res.json(deletedFriendId);
         } catch (error) {
             next(error);
         }

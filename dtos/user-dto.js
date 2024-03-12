@@ -7,8 +7,8 @@ class UserDto {
     birthday;
     wishList;
     friends;
-    friendReqFrom;
-    friendReqTo;
+    followFrom;
+    followTo;
     isActivated;
     createdAt;
     updatedAt;
@@ -22,8 +22,8 @@ class UserDto {
         this.birthday = model.birthday;
         this.wishList = model.wishList;
         this.friends = model.friends;
-        this.friendReqFrom = model.friendReqFrom;
-        this.friendReqTo = model.friendReqTo;
+        this.followFrom = model.followFrom;
+        this.followTo = model.followTo;
         this.isActivated = model.isActivated;
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
