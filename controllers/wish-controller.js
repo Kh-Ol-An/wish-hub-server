@@ -47,30 +47,8 @@ class WishController {
             const { userId, material, show, name, price, address, description } = req.body;
             const files = req.files;
 
-            WishController.wishValidator(name, Object.keys(files).length);
-
-            const potentialWish = await WishModel.findOne({ user: userId, name });
-            if (potentialWish) {
-                return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`));
-            }
-
-            const images = [];
-            for (const key in files) {
-                const file = files[key][0];
-                WishController.fileValidator(file);
-                const image = await AwsController.uploadFile(
-                    file,
-                    `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
-                    next,
-                );
-
-                images.push({
-                    path: image,
-                    position: Number(key.split('-')[1]),
-                });
-            }
-
-            const wish = await wishService.createWish(userId, material, show, name, price, address, description, images);
+            const wish
+                = await wishService.createWish(userId, material, show, name, price, address, description, files, next);
 
             return res.json(wish);
         } catch (error) {

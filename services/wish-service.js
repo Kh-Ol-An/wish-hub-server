@@ -1,19 +1,87 @@
 const { ObjectId } = require('mongoose').Types;
+const mime = require("mime-types");
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
 const WishDto = require("../dtos/wish-dto");
 const ApiError = require("../exceptions/api-error");
 const AwsController = require("../controllers/aws-controller");
 const getImageId = require("../utils/get-image-id");
+const generateFileId = require("../utils/generate-file-id");
 
 class WishService {
-    async createWish(userId, material, show, name, price, address, description, images) {
-        const user = await UserModel.findById(userId);
-        if (!user) {
-            throw new Error('Користувач не знайдений');
+    static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+
+    static isAllowedExtension(filename) {
+        const extension = filename.split('.').pop().toLowerCase();
+        return WishService.ALLOWED_EXTENSIONS.includes(extension);
+    };
+
+    static wishValidator(name, imageLength) {
+        const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s-!"№#$%&()*.,;=?@_]*$/;
+        if (!nameRegex.test(name)) {
+            throw ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського або кириличного алфавітів, цифри, пробіли та наступні символи: -!"№#$%&()*.,;=?@_`);
         }
 
-        const wish = await WishModel.create({ user: userId, material, show, name, price, address, description, images });
+        if (imageLength > process.env.MAX_NUMBER_OF_FILES) {
+            throw ApiError.BadRequest(`Ви намагаєтесь завантажити ${imageLength} файлів. Максимальна кількість файлів для завантаження ${process.env.MAX_NUMBER_OF_FILES}`);
+        }
+    };
+
+    static fileValidator(file) {
+        if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
+            throw ApiError.BadRequest(`Один з файлів які ви завантажуєте розміром ${(file.size / 1024 / 1024).toFixed(2)} МБ. Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`);
+        }
+
+        if (!WishService.isAllowedExtension(file.originalname)) {
+            throw ApiError.BadRequest(
+                `Один або декілька файлів які ви завантажуєте з розширенням "${
+                    mime.extension(file.mimetype)
+                }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
+                    WishService.ALLOWED_EXTENSIONS.join(', ')
+                }"`
+            );
+        }
+    };
+
+    async createWish(userId, material, show, name, price, address, description, files, next) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error('Користувач який створює бажання не знайдений');
+        }
+
+        WishService.wishValidator(name, Object.keys(files).length);
+
+        const potentialWish = await WishModel.findOne({ user: userId, name });
+        if (potentialWish) {
+            return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`));
+        }
+
+        const images = [];
+        for (const key in files) {
+            const file = files[key][0];
+            WishService.fileValidator(file);
+            const image = await AwsController.uploadFile(
+                file,
+                `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
+                next,
+            );
+
+            images.push({
+                path: image,
+                position: Number(key.split('-')[1]),
+            });
+        }
+
+        const wish = await WishModel.create({
+            user: userId,
+            material,
+            show,
+            name,
+            price,
+            address,
+            description,
+            images
+        });
 
         user.wishList.push(wish.id);
         await user.save();
@@ -22,9 +90,7 @@ class WishService {
     };
 
     async updateWish(id, material, show, name, price, address, description, images) {
-        const convertedId = new ObjectId(id);
-        const wish = await WishModel.findById(convertedId);
-
+        const wish = await WishModel.findById(new ObjectId(id));
         if (!wish) {
             throw ApiError.BadRequest(`Бажання з id: "${id}" не знайдено`);
         }

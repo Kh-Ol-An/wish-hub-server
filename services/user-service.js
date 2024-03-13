@@ -94,8 +94,7 @@ class UserService {
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
-        const convertedId = new ObjectId(id);
-        const user = await UserModel.findById(convertedId);
+        const user = await UserModel.findById(new ObjectId(id));
 
         if (!user) {
             throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
