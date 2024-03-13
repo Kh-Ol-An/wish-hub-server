@@ -49,7 +49,7 @@ class WishService {
         }
 
         if (myId === userId) {
-            return user.wishList.map(wish => new WishDto(wish));
+            return user.wishList.map(wish => new WishDto(wish)).sort((a, b) => b.updatedAt - a.updatedAt);
         }
 
         return user.wishList
@@ -64,7 +64,8 @@ class WishService {
 
                 return user.friends.some(friendId => friendId.toString() === myId);
             })
-            .map(wish => new WishDto(wish));
+            .map(wish => new WishDto(wish))
+            .sort((a, b) => b.updatedAt - a.updatedAt);
     };
 
     async deleteWish(userId, wishId, next) {

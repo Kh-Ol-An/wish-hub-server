@@ -90,7 +90,7 @@ class UserService {
 
     async getAllUsers() {
         const users = await UserModel.find();
-        return users.map((user) => new UserDto(user));
+        return users.map((user) => new UserDto(user)).sort((a, b) => b.updatedAt - a.updatedAt);
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
