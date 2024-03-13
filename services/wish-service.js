@@ -42,12 +42,29 @@ class WishService {
         return new WishDto(wish);
     };
 
-    async getWishList(userId) {
-        const user = await UserModel.findById(userId).populate('wishList');
+    async getWishList(myId, userId) {
+        const user = await UserModel.findById(new ObjectId(userId)).populate('wishList');
         if (!user) {
-            throw new Error('Користувач не знайдений');
+            throw new Error(`Користувача з id: "${userId}" не знайдено`);
         }
-        return user.wishList.map(wish => new WishDto(wish));
+
+        if (myId === userId) {
+            return user.wishList.map(wish => new WishDto(wish));
+        }
+
+        return user.wishList
+            .filter(wish => {
+                if (wish.show === 'all') {
+                    return true;
+                }
+
+                if (wish.show === 'nobody') {
+                    return false;
+                }
+
+                return user.friends.some(friendId => friendId.toString() === myId);
+            })
+            .map(wish => new WishDto(wish));
     };
 
     async deleteWish(userId, wishId, next) {
