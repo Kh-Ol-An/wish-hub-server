@@ -43,7 +43,9 @@ class WishService {
         }
     };
 
-    async createWish(userId, material, show, name, price, address, description, files, next) {
+    async createWish(body, files, next) {
+        const { userId, material, show, name, price, address, description } = body;
+
         const user = await UserModel.findById(userId);
         if (!user) {
             throw new Error('Користувач який створює бажання не знайдений');
@@ -56,13 +58,23 @@ class WishService {
             return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`));
         }
 
+        const wish = await WishModel.create({
+            user: userId,
+            material,
+            show,
+            name,
+            price,
+            address,
+            description,
+        });
+
         const images = [];
         for (const key in files) {
             const file = files[key][0];
             WishService.fileValidator(file);
             const image = await AwsController.uploadFile(
                 file,
-                `user-${userId}/wish-${name.replace(/\s+/g, '_')}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
+                `user-${userId}/wish-${wish.id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
                 next,
             );
 
@@ -72,16 +84,8 @@ class WishService {
             });
         }
 
-        const wish = await WishModel.create({
-            user: userId,
-            material,
-            show,
-            name,
-            price,
-            address,
-            description,
-            images
-        });
+        wish.images = images;
+        await wish.save();
 
         user.wishList.push(wish.id);
         await user.save();
@@ -89,10 +93,86 @@ class WishService {
         return new WishDto(wish);
     };
 
-    async updateWish(id, material, show, name, price, address, description, images) {
+    async updateWish(body, files, next) {
+        const { id, userId, material, show, name, price, address, description } = body;
+
         const wish = await WishModel.findById(new ObjectId(id));
         if (!wish) {
             throw ApiError.BadRequest(`Бажання з id: "${id}" не знайдено`);
+        }
+
+        let uploadedImageLength = 0;
+        for (const key in body) {
+            if (key.includes('image')) {
+                // рахуємо тільки ті картинки, які не підлягають видаленню
+                if (!JSON.parse(body[key]).delete) {
+                    uploadedImageLength++;
+                }
+            }
+        }
+        const filesLength = Object.keys(files).length;
+        WishService.wishValidator(name, uploadedImageLength + filesLength);
+
+        const potentialWish = await WishModel.findOne({ user: userId, name });
+        if (potentialWish) {
+            const potentialWishId = new ObjectId(potentialWish._id).toString();
+            if (potentialWishId !== id) {
+                return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`));
+            }
+        }
+
+        const allImages = [];
+        // якщо є нові картинки, то додаємо їх до бази Amazon S3
+        for (const key in files) {
+            const file = files[key][0];
+            WishService.fileValidator(file);
+            const path = await AwsController.uploadFile(
+                file,
+                `user-${userId}/wish-${id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
+                next,
+            );
+
+            // додаємо картинку до загального масиву з валідною позицією
+            allImages.push({
+                path,
+                position: Number(key.split('-')[1]),
+            });
+        }
+        // проходимось по всіх полях, які містять дані про картинки
+        for (const key in body) {
+            if (key.includes('image')) {
+                // якщо картинка підлягає видаленню, то видаляємо її з бази Amazon S3
+                const parsedImage = JSON.parse(body[key]);
+                if (parsedImage.delete) {
+                    await AwsController.deleteFile(
+                        `user-${userId}/wish-${id}/${getImageId(parsedImage.path)}`,
+                        next,
+                    );
+                }
+
+                // додаємо картинку до загального масиву з валідною позицією
+                allImages.push({
+                    ...parsedImage,
+                    position: Number(key.split('-')[1]),
+                });
+            }
+        }
+
+        // сортуємо всі картинки за позицією
+        allImages.sort((a, b) => a.position - b.position);
+
+        // видаляємо картинки з бази MongoDB, які вже були видалені з бази Amazon S3
+        const imagesWithoutDeleted = [];
+        let shift = 0;
+        for (let i = 0; i < allImages.length; i++) {
+            if (allImages[i].delete) {
+                shift++;
+            } else {
+                imagesWithoutDeleted.push({
+                    ...allImages[i],
+                    position: i - shift,
+                });
+            }
         }
 
         wish.material = material;
@@ -101,7 +181,7 @@ class WishService {
         wish.price = price;
         wish.address = address;
         wish.description = description;
-        wish.images = images.map(image => ({ ...image, path: image.path }));
+        wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));
 
         await wish.save();
 
@@ -149,7 +229,7 @@ class WishService {
         for (let i = 0; i < deletedWish.images.length; i++) {
             const image = deletedWish.images[i];
             await AwsController.deleteFile(
-                `user-${user._id}/wish-${deletedWish.name.replace(/\s+/g, '_')}/${getImageId(image.path)}`,
+                `user-${user._id}/wish-${deletedWish.id}/${getImageId(image.path)}`,
                 next,
             );
         }
