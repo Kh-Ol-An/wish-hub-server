@@ -1,12 +1,12 @@
 const { ObjectId } = require('mongoose').Types;
-const mime = require("mime-types");
+const mime = require('mime-types');
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
-const WishDto = require("../dtos/wish-dto");
-const ApiError = require("../exceptions/api-error");
-const AwsController = require("../controllers/aws-controller");
-const getImageId = require("../utils/get-image-id");
-const generateFileId = require("../utils/generate-file-id");
+const WishDto = require('../dtos/wish-dto');
+const ApiError = require('../exceptions/api-error');
+const AwsController = require('../controllers/aws-controller');
+const getImageId = require('../utils/get-image-id');
+const generateFileId = require('../utils/generate-file-id');
 
 class WishService {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];

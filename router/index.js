@@ -1,5 +1,6 @@
 const Router = require('express').Router;
 const multer = require('multer');
+const { body } = require('express-validator');
 const {
     registration,
     login,
@@ -12,7 +13,6 @@ const {
     removeFriend,
 } = require('../controllers/user-controller');
 const { createWish, updateWish, getWishList, deleteWish } = require('../controllers/wish-controller');
-const { body } = require('express-validator');
 const authMiddleware = require('../middlewares/auth-middleware');
 
 const upload = multer();

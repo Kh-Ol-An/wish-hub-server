@@ -1,6 +1,5 @@
-const AWS = require("aws-sdk");
-const mime = require('mime-types');
-const ApiError = require("../exceptions/api-error");
+const AWS = require('aws-sdk');
+const ApiError = require('../exceptions/api-error');
 
 const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_SDK_ACCESS_KEY_ID,

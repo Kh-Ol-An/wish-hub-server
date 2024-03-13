@@ -5,7 +5,7 @@ const AwsController = require('./aws-controller');
 const generateFileId = require('../utils/generate-file-id');
 const WishModel = require('../models/wish-model');
 const ApiError = require('../exceptions/api-error');
-const getImageId = require("../utils/get-image-id");
+const getImageId = require('../utils/get-image-id');
 
 class WishController {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
