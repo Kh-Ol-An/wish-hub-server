@@ -7,8 +7,8 @@ const s3 = new AWS.S3({
     region: process.env.AWS_SDK_REGION,
 });
 
-class AwsController {
-    async uploadFile(file, paramsKey, next) {
+class AwsService {
+    async uploadFile(file, paramsKey) {
         try {
             const params = {
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
@@ -21,11 +21,11 @@ class AwsController {
             const data = await s3.upload(params).promise();
             return data.Location;
         } catch (error) {
-            return next(ApiError.BadRequest(`Помилка при завантаженні файлу на Amazon S3: ${error}`));
+            throw ApiError.BadRequest(`Помилка при завантаженні файлу на Amazon S3: ${error}`);
         }
     }
 
-    async updateFile(file, prefixPath, paramsKey, userId, next) {
+    async updateFile(file, prefixPath, paramsKey, userId) {
         try {
             const existingFiles = await s3.listObjectsV2({
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
@@ -51,11 +51,11 @@ class AwsController {
             const data = await s3.upload(params).promise();
             return data.Location;
         } catch (error) {
-            return next(ApiError.BadRequest(`Помилка при оновлені файлу на Amazon S3: ${error}`));
+            throw ApiError.BadRequest(`Помилка при оновлені файлу на Amazon S3: ${error}`);
         }
     }
 
-    async deleteFile(prefixPath, next) {
+    async deleteFile(prefixPath) {
         try {
             const existingFiles = await s3.listObjectsV2({
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,
@@ -69,9 +69,9 @@ class AwsController {
 
             return '';
         } catch (error) {
-            return next(ApiError.BadRequest(`Помилка при видаленні файлу на Amazon S3: ${error}`));
+            throw ApiError.BadRequest(`Помилка при видаленні файлу на Amazon S3: ${error}`);
         }
     }
 }
 
-module.exports = new AwsController();
+module.exports = new AwsService();

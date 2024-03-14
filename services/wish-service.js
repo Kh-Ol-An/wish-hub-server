@@ -4,7 +4,7 @@ const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
 const WishDto = require('../dtos/wish-dto');
 const ApiError = require('../exceptions/api-error');
-const AwsController = require('../controllers/aws-controller');
+const AwsService = require('../services/aws-service');
 const getImageId = require('../utils/get-image-id');
 const generateFileId = require('../utils/generate-file-id');
 
@@ -43,7 +43,7 @@ class WishService {
         }
     };
 
-    async createWish(body, files, next) {
+    async createWish(body, files) {
         const { userId, material, show, name, price, address, description } = body;
 
         const user = await UserModel.findById(userId);
@@ -55,7 +55,7 @@ class WishService {
 
         const potentialWish = await WishModel.findOne({ user: userId, name });
         if (potentialWish) {
-            return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`));
+            throw ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`);
         }
 
         const wish = await WishModel.create({
@@ -72,10 +72,9 @@ class WishService {
         for (const key in files) {
             const file = files[key][0];
             WishService.fileValidator(file);
-            const image = await AwsController.uploadFile(
+            const image = await AwsService.uploadFile(
                 file,
                 `user-${userId}/wish-${wish.id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
-                next,
             );
 
             images.push({
@@ -93,7 +92,7 @@ class WishService {
         return new WishDto(wish);
     };
 
-    async updateWish(body, files, next) {
+    async updateWish(body, files) {
         const { id, userId, material, show, name, price, address, description } = body;
 
         const wish = await WishModel.findById(new ObjectId(id));
@@ -117,7 +116,7 @@ class WishService {
         if (potentialWish) {
             const potentialWishId = new ObjectId(potentialWish._id).toString();
             if (potentialWishId !== id) {
-                return next(ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`));
+                throw ApiError.BadRequest(`В тебе вже є бажання з назвою "${name}".`);
             }
         }
 
@@ -126,10 +125,9 @@ class WishService {
         for (const key in files) {
             const file = files[key][0];
             WishService.fileValidator(file);
-            const path = await AwsController.uploadFile(
+            const path = await AwsService.uploadFile(
                 file,
                 `user-${userId}/wish-${id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
-                next,
             );
 
             // додаємо картинку до загального масиву з валідною позицією
@@ -144,9 +142,8 @@ class WishService {
                 // якщо картинка підлягає видаленню, то видаляємо її з бази Amazon S3
                 const parsedImage = JSON.parse(body[key]);
                 if (parsedImage.delete) {
-                    await AwsController.deleteFile(
+                    await AwsService.deleteFile(
                         `user-${userId}/wish-${id}/${getImageId(parsedImage.path)}`,
-                        next,
                     );
                 }
 
@@ -214,7 +211,7 @@ class WishService {
             .sort((a, b) => b.updatedAt - a.updatedAt);
     };
 
-    async deleteWish(userId, wishId, next) {
+    async deleteWish(userId, wishId) {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -228,9 +225,8 @@ class WishService {
         }
         for (let i = 0; i < deletedWish.images.length; i++) {
             const image = deletedWish.images[i];
-            await AwsController.deleteFile(
+            await AwsService.deleteFile(
                 `user-${user._id}/wish-${deletedWish.id}/${getImageId(image.path)}`,
-                next,
             );
         }
 

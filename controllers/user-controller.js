@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const mime = require('mime-types');
 const userService = require('../services/user-service');
-const AwsController = require('./aws-controller');
+const AwsService = require('../services/aws-service');
 const ApiError = require('../exceptions/api-error');
 const generateFileId = require('../utils/generate-file-id');
 
@@ -90,18 +90,14 @@ class UserController {
 
             let avatarPath = avatar;
             if (avatar === 'delete') {
-                avatarPath = await AwsController.deleteFile(
-                    `user-${id}/avatar`,
-                    next,
-                );
+                avatarPath = await AwsService.deleteFile(`user-${id}/avatar`);
             }
             if (!!file?.buffer) {
-                avatarPath = await AwsController.updateFile(
+                avatarPath = await AwsService.updateFile(
                     file,
                     `user-${id}/avatar`,
                     `user-${id}/avatar/${generateFileId(file?.buffer)}.${mime.extension(file?.mimetype)}`,
                     id,
-                    next,
                 );
             }
 
