@@ -19,7 +19,7 @@ class UserService {
         const activationLink = uuid.v4();
 
         const user = await UserModel.create({ firstName, email, password: hashPassword, activationLink });
-        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
+        await mailService.sendActivationMail(email, firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user);
         const tokens = tokenService.generateToken({ ...userDto });
@@ -61,7 +61,7 @@ class UserService {
             activationLink = uuid.v4();
         }
 
-        await mailService.sendActivationMail(user.email, `${process.env.API_URL}/api/activate/${activationLink}`);
+        await mailService.sendActivationMail(user.email, user.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         user.isActivated = false;
         user.activationLink = activationLink;
