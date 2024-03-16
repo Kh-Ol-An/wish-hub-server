@@ -7,6 +7,7 @@ const ApiError = require('../exceptions/api-error');
 const AwsService = require('../services/aws-service');
 const getImageId = require('../utils/get-image-id');
 const generateFileId = require('../utils/generate-file-id');
+const { MAX_FILE_SIZE_IN_MB, MAX_NUMBER_OF_FILES } = require('../utils/variables');
 
 class WishService {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
@@ -22,14 +23,14 @@ class WishService {
             throw ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського або кириличного алфавітів, цифри, пробіли та наступні символи: -!"№#$%&()*.,;=?@_`);
         }
 
-        if (imageLength > process.env.MAX_NUMBER_OF_FILES) {
-            throw ApiError.BadRequest(`Ви намагаєтесь завантажити ${imageLength} файлів. Максимальна кількість файлів для завантаження ${process.env.MAX_NUMBER_OF_FILES}`);
+        if (imageLength > MAX_NUMBER_OF_FILES) {
+            throw ApiError.BadRequest(`Ви намагаєтесь завантажити ${imageLength} файлів. Максимальна кількість файлів для завантаження ${MAX_NUMBER_OF_FILES}`);
         }
     };
 
     static fileValidator(file) {
-        if (file.size > 1024 * 1024 * process.env.MAX_FILE_SIZE_IN_MB) {
-            throw ApiError.BadRequest(`Один з файлів які ви завантажуєте розміром ${(file.size / 1024 / 1024).toFixed(2)} МБ. Максимальний розмір файлу ${process.env.MAX_FILE_SIZE_IN_MB} МБ`);
+        if (file.size > 1024 * 1024 * MAX_FILE_SIZE_IN_MB) {
+            throw ApiError.BadRequest(`Один з файлів які ви завантажуєте розміром ${(file.size / 1024 / 1024).toFixed(2)} МБ. Максимальний розмір файлу ${MAX_FILE_SIZE_IN_MB} МБ`);
         }
 
         if (!WishService.isAllowedExtension(file.originalname)) {

@@ -6,6 +6,7 @@ const {
     login,
     refresh,
     activate,
+    getActivationLink,
     logout,
     getUsers,
     updateMyUser,
@@ -14,12 +15,13 @@ const {
 } = require('../controllers/user-controller');
 const { createWish, updateWish, getWishList, deleteWish } = require('../controllers/wish-controller');
 const authMiddleware = require('../middlewares/auth-middleware');
+const { MAX_NUMBER_OF_FILES } = require('../utils/variables');
 
 const upload = multer();
 
 const fields = Array.from(
     // додаємо одиницю до MAX_NUMBER_OF_FILES спеціально щоб відпрацював не multer, а wishValidator в разі перевищення максимальної кількості завантажувальних файлів
-    { length: process.env.MAX_NUMBER_OF_FILES + 1 },
+    { length: MAX_NUMBER_OF_FILES + 1 },
     (_, index) => ({ name: `image-${index}` }),
 );
 
@@ -34,6 +36,7 @@ router.post(
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/activate/:link', activate);
+router.get('/get-activation-link/:userId', getActivationLink);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);

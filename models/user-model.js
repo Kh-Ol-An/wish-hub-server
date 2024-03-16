@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const { ACTIVATION_LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 
 const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
@@ -13,7 +14,7 @@ const UserSchema = new Schema({
     followTo: [{ type: Schema.Types.ObjectId, ref: 'User' }], // я за ними слідкую
     isActivated: { type: Boolean, default: false },
     activationLink: { type: String },
-    activationLinkExpires: { type: Date, default: Date.now() + 24 * 60 * 60 * 1000 },
+    activationLinkExpires: { type: Date, default: Date.now() + ACTIVATION_LINK_WILL_EXPIRE_IN },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

@@ -6,6 +6,7 @@ const mailService = require('./mail-service');
 const tokenService = require('./token-service');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
+const { ACTIVATION_LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 
 class UserService {
     async registration(firstName, email, password) {
@@ -45,6 +46,27 @@ class UserService {
         user.activationLinkExpires = null;
         await user.save();
         return user.isActivated;
+    }
+
+    async generateActivationLink(userId) {
+        const user = await UserModel.findOne(new ObjectId(userId));
+        if (!user) {
+            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+        }
+
+        if (user.isActivated) return;
+
+        let activationLink = user.activationLink;
+        if (!user.activationLink) {
+            activationLink = uuid.v4();
+        }
+
+        await mailService.sendActivationMail(user.email, `${process.env.API_URL}/api/activate/${activationLink}`);
+
+        user.isActivated = false;
+        user.activationLink = activationLink;
+        user.activationLinkExpires = Date.now() + ACTIVATION_LINK_WILL_EXPIRE_IN;
+        await user.save();
     }
 
     async deleteInactiveAccounts() {

@@ -64,6 +64,17 @@ class UserController {
         }
     }
 
+    async getActivationLink(req, res, next) {
+        try {
+            const userId = req.params.userId;
+            await userService.generateActivationLink(userId);
+
+            return res.redirect(process.env.CLIENT_URL);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async refresh(req, res, next) {
         try {
             const { refreshToken } = req.cookies;
