@@ -36,8 +36,26 @@ class UserService {
             throw ApiError.BadRequest('Невірне посилання для активації');
         }
 
+        if (user.activationLinkExpires < Date.now()) {
+            return user.isActivated;
+        }
+
         user.isActivated = true;
+        user.activationLink = null;
+        user.activationLinkExpires = null;
         await user.save();
+        return user.isActivated;
+    }
+
+    async deleteInactiveAccounts() {
+        const inactiveAccounts = await UserModel.find({
+            isActivated: false,
+            activationLinkExpires: { $lt: Date.now() },
+        });
+
+        for (const account of inactiveAccounts) {
+            await UserModel.deleteOne({ _id: account._id });
+        }
     }
 
     async login(email, password) {

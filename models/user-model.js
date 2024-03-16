@@ -13,6 +13,7 @@ const UserSchema = new Schema({
     followTo: [{ type: Schema.Types.ObjectId, ref: 'User' }], // я за ними слідкую
     isActivated: { type: Boolean, default: false },
     activationLink: { type: String },
+    activationLinkExpires: { type: Date, default: Date.now() + 24 * 60 * 60 * 1000 },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

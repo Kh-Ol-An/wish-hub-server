@@ -52,9 +52,13 @@ class UserController {
     async activate(req, res, next) {
         try {
             const activationLink = req.params.link;
-            await userService.activate(activationLink);
+            const isActivated = await userService.activate(activationLink);
 
-            return res.redirect(process.env.CLIENT_URL);
+            if (isActivated) {
+                return res.redirect(process.env.CLIENT_URL);
+            }
+
+            return res.redirect(`${process.env.CLIENT_URL}/activation-link-expired`);
         } catch (error) {
             next(error);
         }

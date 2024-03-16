@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
+const cron = require('node-cron');
 const router = require('./router/index');
 const errorMiddleware = require('./middlewares/error-middleware');
+const UserService = require('./services/user-service');
 
 const PORT = process.env.PORT || 5000;
 
@@ -26,6 +28,16 @@ app.use(function (req, res, next) {
 });
 app.use('/api', router);
 app.use(errorMiddleware);
+
+cron.schedule(
+    '0 0 * * *', // every day at 00:00
+    async () => {
+        await UserService.deleteInactiveAccounts();
+    },
+    {
+        timezone: 'Europe/Kiev'
+    },
+);
 
 const start = async () => {
     try {
