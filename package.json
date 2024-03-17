@@ -1,6 +1,6 @@
 {
-  "name": "pwl-server",
-  "version": "1.0.0",
+  "name": "wish-hub",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "engines": {

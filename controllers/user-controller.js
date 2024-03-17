@@ -16,7 +16,17 @@ class UserController {
             const { firstName, email, password } = req.body;
             const userData = await userService.registration(firstName, email, password);
 
-            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+            res.cookie(
+                'refreshToken',
+                userData.refreshToken,
+                {
+                    secure: true,
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    httpOnly: true,
+                    sameSite: 'None',
+                    domain: 'wish-hub-26b7357f6fa0.herokuapp.com',
+                },
+            );
 
             return res.json(userData);
         } catch (error) {
@@ -29,7 +39,17 @@ class UserController {
             const { email, password } = req.body;
             const userData = await userService.login(email, password);
 
-            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+            res.cookie(
+                'refreshToken',
+                userData.refreshToken,
+                {
+                    secure: true,
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    httpOnly: true,
+                    sameSite: 'None',
+                    domain: 'wish-hub-26b7357f6fa0.herokuapp.com',
+                },
+            );
 
             return res.json(userData);
         } catch (error) {
@@ -81,7 +101,17 @@ class UserController {
             console.log('requestische: ', req);
             const userData = await userService.refresh(refreshToken);
 
-            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+            res.cookie(
+                'refreshToken',
+                userData.refreshToken,
+                {
+                    secure: true,
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    httpOnly: true,
+                    sameSite: 'None',
+                    domain: 'wish-hub-26b7357f6fa0.herokuapp.com',
+                },
+            );
 
             return res.json(userData);
         } catch (error) {
