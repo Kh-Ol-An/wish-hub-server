@@ -23,7 +23,7 @@ class UserController {
                     secure: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
-                    sameSite: 'None',
+                    sameSite: 'none',
                     domain: 'wish-hub.net',
                 },
             );
@@ -46,7 +46,7 @@ class UserController {
                     secure: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
-                    sameSite: 'None',
+                    sameSite: 'none',
                     domain: 'wish-hub.net',
                 },
             );
@@ -108,7 +108,7 @@ class UserController {
                     secure: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
-                    sameSite: 'None',
+                    sameSite: 'none',
                     domain: 'wish-hub.net',
                 },
             );
