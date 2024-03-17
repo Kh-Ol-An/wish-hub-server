@@ -24,7 +24,7 @@ class UserController {
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
                     sameSite: 'None',
-                    domain: 'wish-hub-26b7357f6fa0.herokuapp.com',
+                    domain: 'wish-hub.net',
                 },
             );
 
@@ -47,7 +47,7 @@ class UserController {
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
                     sameSite: 'None',
-                    domain: 'wish-hub-26b7357f6fa0.herokuapp.com',
+                    domain: 'wish-hub.net',
                 },
             );
 
@@ -109,7 +109,7 @@ class UserController {
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
                     sameSite: 'None',
-                    domain: 'wish-hub-26b7357f6fa0.herokuapp.com',
+                    domain: 'wish-hub.net',
                 },
             );
 
