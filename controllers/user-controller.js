@@ -20,7 +20,7 @@ class UserController {
                 'refreshToken',
                 userData.refreshToken,
                 {
-                    secure: true,
+                    secure: false,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
                     sameSite: 'none',
@@ -43,7 +43,7 @@ class UserController {
                 'refreshToken',
                 userData.refreshToken,
                 {
-                    secure: true,
+                    secure: false,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
                     sameSite: 'none',
@@ -105,7 +105,7 @@ class UserController {
                 'refreshToken',
                 userData.refreshToken,
                 {
-                    secure: true,
+                    secure: false,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                     httpOnly: false,
                     sameSite: 'none',
