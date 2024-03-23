@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
 const mime = require('mime-types');
-const userService = require('../services/user-service');
+const UserService = require('../services/user-service');
 const AwsService = require('../services/aws-service');
 const ApiError = require('../exceptions/api-error');
 const generateFileId = require('../utils/generate-file-id');
@@ -14,7 +14,7 @@ class UserController {
             }
 
             const { firstName, email, password } = req.body;
-            const userData = await userService.registration(firstName, email, password);
+            const userData = await UserService.registration(firstName, email, password);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -27,7 +27,7 @@ class UserController {
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
-            const userData = await userService.login(email, password);
+            const userData = await UserService.login(email, password);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -40,7 +40,7 @@ class UserController {
     async logout(req, res, next) {
         try {
             const { refreshToken } = req.cookies;
-            const token = await userService.logout(refreshToken);
+            const token = await UserService.logout(refreshToken);
             res.clearCookie('refreshToken');
 
             return res.json(token);
@@ -52,7 +52,7 @@ class UserController {
     async activate(req, res, next) {
         try {
             const activationLink = req.params.link;
-            const isActivated = await userService.activate(activationLink);
+            const isActivated = await UserService.activate(activationLink);
 
             if (isActivated) {
                 return res.redirect(process.env.CLIENT_URL);
@@ -67,7 +67,7 @@ class UserController {
     async getActivationLink(req, res, next) {
         try {
             const userId = req.params.userId;
-            await userService.generateActivationLink(userId);
+            await UserService.generateActivationLink(userId);
 
 //            return res.redirect(process.env.CLIENT_URL);
         } catch (error) {
@@ -78,7 +78,7 @@ class UserController {
     async refresh(req, res, next) {
         try {
             const { refreshToken } = req.cookies;
-            const userData = await userService.refresh(refreshToken);
+            const userData = await UserService.refresh(refreshToken);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -90,7 +90,7 @@ class UserController {
 
     async getUsers(req, res, next) {
         try {
-            const users = await userService.getAllUsers();
+            const users = await UserService.getAllUsers();
 
             return res.json(users);
         } catch (error) {
@@ -116,7 +116,7 @@ class UserController {
                 );
             }
 
-            const user = await userService.updateMyUser(id, firstName, lastName, birthday, avatarPath);
+            const user = await UserService.updateMyUser(id, firstName, lastName, birthday, avatarPath);
 
             return res.json(user);
         } catch (error) {
@@ -128,7 +128,7 @@ class UserController {
         try {
             const { userId } = req.query;
 
-            const deletedUserId = await userService.deleteMyUser(userId);
+            const deletedUserId = await UserService.deleteMyUser(userId);
 
             return res.json(deletedUserId);
         } catch (error) {
@@ -140,7 +140,7 @@ class UserController {
         try {
             const { myId, friendId } = req.body;
 
-            const myUser = await userService.addFriend(myId, friendId);
+            const myUser = await UserService.addFriend(myId, friendId);
 
             return res.json(myUser);
         } catch (error) {
@@ -152,7 +152,7 @@ class UserController {
         try {
             const { myId, friendId, whereRemove } = req.body;
 
-            const myUser = await userService.removeFriend(myId, friendId, whereRemove);
+            const myUser = await UserService.removeFriend(myId, friendId, whereRemove);
 
             return res.json(myUser);
         } catch (error) {

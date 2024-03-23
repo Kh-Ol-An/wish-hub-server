@@ -1,5 +1,5 @@
 const ApiError = require('../exceptions/api-error');
-const tokenService = require('../services/token-service');
+const TokenService = require('../services/token-service');
 
 module.exports = function (req, res, next) {
     try {
@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
             return next(ApiError.UnauthorizedError());
         }
 
-        const userData = tokenService.validateAccessToken(accessToken);
+        const userData = TokenService.validateAccessToken(accessToken);
         if (!userData) {
             return next(ApiError.UnauthorizedError());
         }

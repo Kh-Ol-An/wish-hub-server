@@ -1,9 +1,9 @@
-const wishService = require('../services/wish-service');
+const WishService = require('../services/wish-service');
 
 class WishController {
     async createWish(req, res, next) {
         try {
-            const wish = await wishService.createWish(req.body, req.files, next);
+            const wish = await WishService.createWish(req.body, req.files, next);
 
             return res.json(wish);
         } catch (error) {
@@ -13,7 +13,7 @@ class WishController {
 
     async updateWish(req, res, next) {
         try {
-            const wish = await wishService.updateWish(req.body, req.files, next);
+            const wish = await WishService.updateWish(req.body, req.files, next);
 
             return res.json(wish);
         } catch (error) {
@@ -25,7 +25,7 @@ class WishController {
         try {
             const { myId, userId } = req.query;
 
-            const wishList = await wishService.getWishList(myId, userId);
+            const wishList = await WishService.getWishList(myId, userId);
 
             return res.json(wishList);
         } catch (error) {
@@ -37,7 +37,7 @@ class WishController {
         try {
             const { userId, wishId } = req.query;
 
-            const deletedWishId = await wishService.deleteWish(userId, wishId);
+            const deletedWishId = await WishService.deleteWish(userId, wishId);
 
             return res.json(deletedWishId);
         } catch (error) {

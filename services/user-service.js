@@ -4,8 +4,8 @@ const uuid = require('uuid');
 const UserModel = require('../models/user-model');
 const TokenModel = require('../models/token-model');
 const WishModel = require('../models/wish-model');
-const mailService = require('./mail-service');
-const tokenService = require('./token-service');
+const MailService = require('./mail-service');
+const TokenService = require('./token-service');
 const AwsService = require('./aws-service');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
@@ -22,11 +22,11 @@ class UserService {
         const activationLink = uuid.v4();
 
         const user = await UserModel.create({ firstName, email, password: hashPassword, activationLink });
-        await mailService.sendActivationMail(email, firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
+        await MailService.sendActivationMail(email, firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateToken({ ...userDto });
-        await tokenService.saveToken(userDto.id, tokens.refreshToken);
+        const tokens = TokenService.generateToken({ ...userDto });
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {
             ...tokens,
@@ -64,7 +64,7 @@ class UserService {
             activationLink = uuid.v4();
         }
 
-        await mailService.sendActivationMail(user.email, user.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
+        await MailService.sendActivationMail(user.email, user.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         user.isActivated = false;
         user.activationLink = activationLink;
@@ -95,8 +95,8 @@ class UserService {
         }
 
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateToken({ ...userDto });
-        await tokenService.saveToken(userDto.id, tokens.refreshToken);
+        const tokens = TokenService.generateToken({ ...userDto });
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {
             ...tokens,
@@ -105,7 +105,7 @@ class UserService {
     }
 
     async logout(refreshToken) {
-        const token = await tokenService.removeToken(refreshToken);
+        const token = await TokenService.removeToken(refreshToken);
         return token;
     }
 
@@ -114,16 +114,16 @@ class UserService {
             throw ApiError.UnauthorizedError();
         }
 
-        const userData = tokenService.validateRefreshToken(refreshToken);
-        const tokenFromDb = await tokenService.findToken(refreshToken);
+        const userData = TokenService.validateRefreshToken(refreshToken);
+        const tokenFromDb = await TokenService.findToken(refreshToken);
         if (!userData || !tokenFromDb) {
             throw ApiError.UnauthorizedError();
         }
 
         const user = await UserModel.findById(userData.id);
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateToken({ ...userDto });
-        await tokenService.saveToken(userDto.id, tokens.refreshToken);
+        const tokens = TokenService.generateToken({ ...userDto });
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {
             ...tokens,
