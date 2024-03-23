@@ -10,6 +10,7 @@ const {
     logout,
     getUsers,
     updateMyUser,
+    deleteMyUser,
     addFriend,
     removeFriend,
 } = require('../controllers/user-controller');
@@ -40,6 +41,7 @@ router.get('/get-activation-link/:userId', getActivationLink);
 router.get('/refresh', refresh);
 router.get('/users', authMiddleware, getUsers);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
+router.delete('/user', authMiddleware, deleteMyUser);
 router.post('/friend', authMiddleware, addFriend);
 router.delete('/friend', authMiddleware, removeFriend);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);

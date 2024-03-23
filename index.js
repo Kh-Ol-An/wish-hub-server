@@ -31,6 +31,7 @@ app.use(errorMiddleware);
 
 cron.schedule(
     '0 0 * * *', // every day at 00:00
+//    '*/2 * * * *', // кожні дві хвилини
     async () => {
         await UserService.deleteInactiveAccounts();
     },

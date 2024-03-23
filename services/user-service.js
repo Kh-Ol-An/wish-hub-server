@@ -2,8 +2,11 @@ const { ObjectId } = require('mongoose').Types;
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const UserModel = require('../models/user-model');
+const TokenModel = require('../models/token-model');
+const WishModel = require('../models/wish-model');
 const mailService = require('./mail-service');
 const tokenService = require('./token-service');
+const AwsService = require('./aws-service');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
 const { ACTIVATION_LINK_WILL_EXPIRE_IN } = require('../utils/variables');
@@ -134,11 +137,11 @@ class UserService {
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
-        const user = await UserModel.findById(new ObjectId(id));
-
+        const user = await UserModel.findById(id);
         if (!user) {
             throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
         }
+
         user.firstName = firstName;
         user.lastName = lastName;
         user.birthday = birthday;
@@ -146,6 +149,26 @@ class UserService {
         await user.save();
 
         return new UserDto(user);
+    }
+
+    async deleteMyUser(id) {
+        const deletedUser = await UserModel.findByIdAndDelete(id);
+        if (!deletedUser) {
+            throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
+        }
+
+        await TokenModel.deleteOne({ user: deletedUser._id });
+
+        for (const wishId of deletedUser.wishList) {
+            await WishModel.findByIdAndDelete(wishId);
+        }
+
+        const deletedUserPath = await AwsService.deleteFile(`user-${deletedUser._id}`);
+        if (deletedUserPath.length !== 0) {
+            throw ApiError.BadRequest('Не вдалось видалити всі файли користувача');
+        }
+
+        return deletedUser._id;
     }
 
     async addFriend(myId, friendId) {

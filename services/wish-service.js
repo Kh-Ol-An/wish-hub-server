@@ -224,12 +224,11 @@ class WishService {
         if (!deletedWish) {
             throw new Error('Бажання не знайдено');
         }
-        for (let i = 0; i < deletedWish.images.length; i++) {
-            const image = deletedWish.images[i];
-            await AwsService.deleteFile(
-                `user-${user._id}/wish-${deletedWish.id}/${getImageId(image.path)}`,
-            );
-        }
+
+        // Видаліть всі файли з бажанням з бази Amazon S3
+        await AwsService.deleteFile(
+            `user-${user._id}/wish-${deletedWish._id}`,
+        );
 
         // Знайдіть індекс бажання в масиві wishList користувача і видаліть його
         const index = user.wishList.indexOf(deletedWish._id);

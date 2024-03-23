@@ -62,10 +62,12 @@ class AwsService {
                 Prefix: prefixPath,
             }).promise();
 
-            await s3.deleteObject({
-                Bucket: process.env.AWS_SDK_BUCKET_NAME,
-                Key: existingFiles.Contents[0].Key,
-            }).promise();
+            for (const file of existingFiles.Contents) {
+                await s3.deleteObject({
+                    Bucket: process.env.AWS_SDK_BUCKET_NAME,
+                    Key: file.Key,
+                }).promise();
+            }
 
             return '';
         } catch (error) {

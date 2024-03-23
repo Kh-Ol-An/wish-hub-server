@@ -124,6 +124,18 @@ class UserController {
         }
     }
 
+    async deleteMyUser(req, res, next) {
+        try {
+            const { userId } = req.query;
+
+            const deletedUserId = await userService.deleteMyUser(userId);
+
+            return res.json(deletedUserId);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async addFriend(req, res, next) {
         try {
             const { myId, friendId } = req.body;

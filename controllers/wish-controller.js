@@ -37,7 +37,7 @@ class WishController {
         try {
             const { userId, wishId } = req.query;
 
-            const deletedWishId = await wishService.deleteWish(userId, wishId, next);
+            const deletedWishId = await wishService.deleteWish(userId, wishId);
 
             return res.json(deletedWishId);
         } catch (error) {
