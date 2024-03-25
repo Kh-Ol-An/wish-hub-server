@@ -22,7 +22,7 @@ class MailService {
             to,
             subject: `Активація облікового запису на ${process.env.CLIENT_URL.replace('https://', '')}`,
             text: '',
-            html: html.replace('{link}', link).replace('{name}', name)
+            html: html.replace('{name}', name).replace('{link}', link).replace('{handle-link}', link)
         });
     }
 }
