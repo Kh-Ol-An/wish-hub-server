@@ -60,7 +60,7 @@ class WishService {
         }
 
         const wish = await WishModel.create({
-            user: userId,
+            userId,
             material,
             show,
             name,

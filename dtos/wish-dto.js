@@ -12,9 +12,21 @@ class ImageDto {
     }
 }
 
+class BookingDto {
+    userId;
+    start;
+    end;
+
+    constructor(model) {
+        this.userId = model.userId;
+        this.start = model.start;
+        this.end = model.end;
+    }
+}
+
 class WishDto {
     id;
-    user;
+    userId;
     material;
     show;
     name;
@@ -27,7 +39,7 @@ class WishDto {
 
     constructor(model) {
         this.id = model._id;
-        this.user = model.user;
+        this.userId = model.userId;
         this.material = model.material;
         this.show = model.show;
         this.name = model.name;
@@ -35,6 +47,7 @@ class WishDto {
         this.address = model.address;
         this.description = model.description;
         this.images = model.images.map(image => new ImageDto(image));
+        this.booking = new BookingDto(model.booking);
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
     }
