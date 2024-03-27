@@ -14,7 +14,14 @@ const {
     addFriend,
     removeFriend,
 } = require('../controllers/user-controller');
-const { createWish, updateWish, getWishList, deleteWish } = require('../controllers/wish-controller');
+const {
+    createWish,
+    bookWish,
+    cancelBookWish,
+    updateWish,
+    getWishList,
+    deleteWish,
+} = require('../controllers/wish-controller');
 const authMiddleware = require('../middlewares/auth-middleware');
 const { MAX_NUMBER_OF_FILES } = require('../utils/variables');
 
@@ -45,8 +52,10 @@ router.post('/user/delete', authMiddleware, deleteMyUser);
 router.post('/friend', authMiddleware, addFriend);
 router.delete('/friend', authMiddleware, removeFriend);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
+router.post('/wish/book', authMiddleware, bookWish);
+router.post('/wish/cancel-book', authMiddleware, cancelBookWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
-router.get('/wishes', authMiddleware, getWishList);
 router.delete('/wish', authMiddleware, deleteWish);
+router.get('/wishes', authMiddleware, getWishList);
 
 module.exports = router;

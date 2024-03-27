@@ -187,17 +187,18 @@ class WishService {
     };
 
     async getWishList(myId, userId) {
-        const user = await UserModel.findById(new ObjectId(userId)).populate('wishList');
+        const user = await UserModel.findById(userId).populate('wishList');
         if (!user) {
             throw new Error(`Користувача з id: "${userId}" не знайдено`);
         }
 
         if (myId === userId) {
+            // якщо запитуємо власний список бажань, то повертаємо його в тому порядку, в якому він був створений
             return user.wishList.map(wish => new WishDto(wish)).sort((a, b) => b.updatedAt - a.updatedAt);
         }
 
         return user.wishList
-            .filter(wish => {
+            .filter(wish => { // фільтруємо бажання в залежності від того, хто може їх бачити
                 if (wish.show === 'all') {
                     return true;
                 }
@@ -208,8 +209,8 @@ class WishService {
 
                 return user.friends.some(friendId => friendId.toString() === myId);
             })
-            .map(wish => new WishDto(wish))
-            .sort((a, b) => b.updatedAt - a.updatedAt);
+            .map(wish => new WishDto(wish)) // перетворюємо бажання в об'єкти класу WishDto
+            .sort((a, b) => b.updatedAt - a.updatedAt); // сортуємо бажання за датою оновлення
     };
 
     async deleteWish(userId, wishId) {
@@ -219,7 +220,7 @@ class WishService {
             throw new Error('Користувач не знайдений');
         }
 
-        // Знайдіть бажання за його ідентифікатором
+        // Знайдіть бажання за його ідентифікатором і видаліть його
         const deletedWish = await WishModel.findByIdAndDelete(wishId);
         if (!deletedWish) {
             throw new Error('Бажання не знайдено');
@@ -240,6 +241,58 @@ class WishService {
         await user.save();
 
         return deletedWish._id;
+    };
+
+    async bookWish(userId, wishId, end) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error('Користувач не знайдений');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const bookingWish = await WishModel.findById(wishId);
+        if (!bookingWish) {
+            throw new Error('Бажання не знайдено');
+        }
+
+        // Забронювати бажання
+        bookingWish.booking = {
+            userId,
+            start: new Date(),
+            end,
+        };
+
+        // Збережіть зміни
+        await bookingWish.save();
+
+        return new WishDto(bookingWish);
+    };
+
+    async cancelBookWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error('Користувач не знайдений');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const bookingWish = await WishModel.findById(wishId);
+        if (!bookingWish) {
+            throw new Error('Бажання не знайдено');
+        }
+
+        if (user._id.toString() !== bookingWish.booking.userId.toString()) {
+            throw new Error('Ви не можете скасувати бронювання чужого бажання');
+        }
+
+        // Видаліть бронювання бажання
+        bookingWish.booking = undefined;
+
+        // Збережіть зміни
+        await bookingWish.save();
+
+        return new WishDto(bookingWish);
     };
 }
 

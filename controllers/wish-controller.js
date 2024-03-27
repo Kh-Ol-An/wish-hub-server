@@ -44,6 +44,30 @@ class WishController {
             next(error);
         }
     }
+
+    async bookWish(req, res, next) {
+        try {
+            const { userId, wishId, end } = req.body;
+
+            const bookedWish = await WishService.bookWish(userId, wishId, end);
+
+            return res.json(bookedWish);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async cancelBookWish(req, res, next) {
+        try {
+            const { userId, wishId } = req.body;
+
+            const bookedWish = await WishService.cancelBookWish(userId, wishId);
+
+            return res.json(bookedWish);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new WishController();

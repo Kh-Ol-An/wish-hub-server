@@ -33,6 +33,7 @@ class WishDto {
     price;
     address;
     description;
+    executed;
     images;
     createdAt;
     updatedAt;
@@ -46,8 +47,9 @@ class WishDto {
         this.price = model.price;
         this.address = model.address;
         this.description = model.description;
+        this.executed = model.executed;
         this.images = model.images.map(image => new ImageDto(image));
-        this.booking = new BookingDto(model.booking);
+        this.booking = model.booking ? new BookingDto(model.booking) : null;
         this.createdAt = model.createdAt;
         this.updatedAt = model.updatedAt;
     }

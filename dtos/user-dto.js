@@ -6,6 +6,8 @@ class UserDto {
     avatar;
     birthday;
     wishList;
+    successfulWishes;
+    unsuccessfulWishes;
     friends;
     followFrom;
     followTo;
@@ -21,6 +23,8 @@ class UserDto {
         this.avatar = model.avatar;
         this.birthday = model.birthday;
         this.wishList = model.wishList;
+        this.successfulWishes = model.successfulWishes;
+        this.unsuccessfulWishes = model.unsuccessfulWishes;
         this.friends = model.friends;
         this.followFrom = model.followFrom;
         this.followTo = model.followTo;

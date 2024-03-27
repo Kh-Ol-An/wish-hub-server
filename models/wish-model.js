@@ -6,12 +6,6 @@ const ImageSchema = new Schema({
     delete: { type: Boolean, default: false },
 });
 
-const BookingSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
-    start: { type: Date },
-    end: { type: Date },
-});
-
 const WishSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     material: { type: Boolean, required: true },
@@ -25,8 +19,13 @@ const WishSchema = new Schema({
     },
     address:  { type: String },
     description: { type: String },
+    executed: { type: Boolean, default: false },
     images: [ImageSchema],
-    booking: { BookingSchema },
+    booking: {
+        userId: { type: Schema.Types.ObjectId, ref: 'User' },
+        start: { type: Date },
+        end: { type: Date }
+    },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

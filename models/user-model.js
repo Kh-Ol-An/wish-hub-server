@@ -9,6 +9,8 @@ const UserSchema = new Schema({
     avatar: { type: String },
     birthday: { type: Date },
     wishList: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
+    successfulWishes: { type: Number, default: 0 },
+    unsuccessfulWishes: { type: Number, default: 0 },
     friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // двосторонній запит
     followFrom: [{ type: Schema.Types.ObjectId, ref: 'User' }], // слідкують за мною
     followTo: [{ type: Schema.Types.ObjectId, ref: 'User' }], // я за ними слідкую
