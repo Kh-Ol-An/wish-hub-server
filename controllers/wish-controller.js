@@ -61,9 +61,33 @@ class WishController {
         try {
             const { userId, wishId } = req.body;
 
-            const bookedWish = await WishService.cancelBookWish(userId, wishId);
+            const wish = await WishService.cancelBookWish(userId, wishId);
 
-            return res.json(bookedWish);
+            return res.json(wish);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async doneWish(req, res, next) {
+        try {
+            const { userId, wishId } = req.body;
+
+            const doneWishData = await WishService.doneWish(userId, wishId);
+
+            return res.json(doneWishData);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async undoneWish(req, res, next) {
+        try {
+            const { userId, wishId } = req.body;
+
+            const undoneWishData = await WishService.undoneWish(userId, wishId);
+
+            return res.json(undoneWishData);
         } catch (error) {
             next(error);
         }

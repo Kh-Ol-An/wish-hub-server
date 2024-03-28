@@ -3,6 +3,7 @@ const mime = require('mime-types');
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
 const WishDto = require('../dtos/wish-dto');
+const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
 const AwsService = require('../services/aws-service');
 const getImageId = require('../utils/get-image-id');
@@ -277,22 +278,94 @@ class WishService {
         }
 
         // Знайдіть бажання за його ідентифікатором
-        const bookingWish = await WishModel.findById(wishId);
-        if (!bookingWish) {
+        const bookedWish = await WishModel.findById(wishId);
+        if (!bookedWish) {
             throw new Error('Бажання не знайдено');
         }
 
-        if (user._id.toString() !== bookingWish.booking.userId.toString()) {
-            throw new Error('Ви не можете скасувати бронювання чужого бажання');
+        if (user._id.toString() !== bookedWish.booking.userId.toString()) {
+            throw new Error('Ви не можете скасувати бронювання бажання яке не бронювали');
         }
 
         // Видаліть бронювання бажання
-        bookingWish.booking = undefined;
+        bookedWish.booking = undefined;
 
         // Збережіть зміни
-        await bookingWish.save();
+        await bookedWish.save();
 
-        return new WishDto(bookingWish);
+        return new WishDto(bookedWish);
+    };
+
+    async doneWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error('Користувач не знайдений');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const bookedWish = await WishModel.findById(wishId);
+        if (!bookedWish) {
+            throw new Error('Бажання не знайдено');
+        }
+
+        if (user._id.toString() !== bookedWish.userId.toString()) {
+            throw new Error('Ви не можете позначити чуже бажання виконанним');
+        }
+
+        const executorUser = await UserModel.findById(bookedWish.booking.userId);
+        if (!executorUser) {
+            throw new Error('Виконувача бажання не знайдено');
+        }
+
+        // Видаліть бронювання бажання
+        bookedWish.booking = undefined;
+        // Позначте бажання виконаним
+        bookedWish.executed = true;
+
+        // Додати до виконанних бажань користувача ще одне виконанне бажання
+        executorUser.successfulWishes += 1;
+
+        // Збережіть зміни
+        await bookedWish.save();
+        await executorUser.save();
+
+        return { executorUser: new UserDto(executorUser), bookedWish: new WishDto(bookedWish) };
+    };
+
+    async undoneWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new Error('Користувач не знайдений');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const bookedWish = await WishModel.findById(wishId);
+        if (!bookedWish) {
+            throw new Error('Бажання не знайдено');
+        }
+
+        if (user._id.toString() !== bookedWish.userId.toString()) {
+            throw new Error('Ви не можете позначити чуже бажання не виконанним');
+        }
+
+        const executorUser = await UserModel.findById(bookedWish.booking.userId);
+        if (!executorUser) {
+            throw new Error('Виконувача бажання не знайдено');
+        }
+
+        // Видаліть бронювання бажання
+        bookedWish.booking = undefined;
+
+        // Додати до виконанних бажань користувача ще одне виконанне бажання
+        executorUser.unsuccessfulWishes += 1;
+
+        // Збережіть зміни
+        await bookedWish.save();
+        await executorUser.save();
+
+        return { executorUser: new UserDto(executorUser), bookedWish: new WishDto(bookedWish) };
     };
 }
 

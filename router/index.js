@@ -18,6 +18,8 @@ const {
     createWish,
     bookWish,
     cancelBookWish,
+    doneWish,
+    undoneWish,
     updateWish,
     getWishList,
     deleteWish,
@@ -54,6 +56,8 @@ router.delete('/friend', authMiddleware, removeFriend);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.post('/wish/book', authMiddleware, bookWish);
 router.post('/wish/cancel-book', authMiddleware, cancelBookWish);
+router.post('/wish/done', authMiddleware, doneWish);
+router.post('/wish/undone', authMiddleware, undoneWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.delete('/wish', authMiddleware, deleteWish);
 router.get('/wishes', authMiddleware, getWishList);
