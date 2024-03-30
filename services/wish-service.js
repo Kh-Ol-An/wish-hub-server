@@ -11,7 +11,7 @@ const generateFileId = require('../utils/generate-file-id');
 const { MAX_FILE_SIZE_IN_MB, MAX_NUMBER_OF_FILES } = require('../utils/variables');
 
 class WishService {
-    static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+    static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     static isAllowedExtension(filename) {
         const extension = filename.split('.').pop().toLowerCase();
