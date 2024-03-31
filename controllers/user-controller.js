@@ -90,6 +90,30 @@ class UserController {
         }
     }
 
+    async changeForgottenPassword(req, res, next) {
+        try {
+            const { passwordResetLink, newPassword } = req.body;
+
+            await UserService.changeForgottenPassword(passwordResetLink, newPassword);
+
+            return res.redirect(`${process.env.CLIENT_URL}/auth`);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async forgotPassword(req, res, next) {
+        try {
+            const { email } = req.body;
+
+            const userEmail = await UserService.forgotPassword(email);
+
+            return res.json(userEmail);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async changePassword(req, res, next) {
         try {
             const { userId, oldPassword, newPassword } = req.body;

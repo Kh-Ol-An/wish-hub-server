@@ -9,7 +9,7 @@ const TokenService = require('./token-service');
 const AwsService = require('./aws-service');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
-const { ACTIVATION_LINK_WILL_EXPIRE_IN } = require('../utils/variables');
+const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 
 class UserService {
     async registration(firstName, email, password) {
@@ -94,7 +94,7 @@ class UserService {
 
         user.isActivated = false;
         user.activationLink = activationLink;
-        user.activationLinkExpires = Date.now() + ACTIVATION_LINK_WILL_EXPIRE_IN;
+        user.activationLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
         await user.save();
     }
 
@@ -106,6 +106,18 @@ class UserService {
 
         for (const account of inactiveAccounts) {
             await UserModel.deleteOne({ _id: account._id });
+        }
+    }
+
+    async deleteExpiredPasswordResetLink() {
+        const accountsWithExpiredLinkPasswordReset = await UserModel.find({
+            passwordResetLinkExpires: { $lt: Date.now() },
+        });
+
+        for (const account of accountsWithExpiredLinkPasswordReset) {
+            account.passwordResetLink = undefined;
+            account.passwordResetLinkExpires = undefined;
+            await account.save();
         }
     }
 
@@ -129,6 +141,46 @@ class UserService {
             ...tokens,
             user: userDto,
         };
+    }
+
+    async changeForgottenPassword(passwordResetLink, newPassword) {
+        const user = await UserModel.findOne({ passwordResetLink });
+        if (!user) {
+            throw ApiError.BadRequest('Невірне посилання для зміни паролю');
+        }
+
+        if (user.passwordResetLinkExpires < Date.now()) {
+            throw ApiError.BadRequest('Посилання для зміни паролю вже не дійсне');
+        }
+
+        const hashPassword = await bcrypt.hash(newPassword, 3);
+        user.password = hashPassword;
+
+        user.passwordResetLink = undefined;
+        user.passwordResetLinkExpires = undefined;
+
+        await user.save();
+    }
+
+    async forgotPassword(email) {
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+        }
+
+        const passwordResetLink = uuid.v4();
+        await MailService.sendPasswordResetMail(
+            email,
+            user.firstName,
+            `${process.env.CLIENT_URL}/change-forgotten-password/${passwordResetLink}`,
+        );
+
+        user.passwordResetLink = passwordResetLink;
+        user.passwordResetLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
+
+        await user.save();
+
+        return user.email;
     }
 
     async changePassword(userId, oldPassword, newPassword, refreshToken) {

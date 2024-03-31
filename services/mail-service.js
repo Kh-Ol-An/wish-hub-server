@@ -15,12 +15,24 @@ class MailService {
     }
 
     async sendActivationMail(to, name, link) {
-        const html = await fs.readFile('emails/activationEmail.html', 'utf-8');
+        const html = await fs.readFile('emails/activationMail.html', 'utf-8');
 
         await this.transporter.sendMail({
             from: process.env.SMTP_USER,
             to,
             subject: `Активація облікового запису на ${process.env.CLIENT_URL.replace('https://', '')}`,
+            text: '',
+            html: html.replace('{name}', name).replace('{link}', link).replace('{handle-link}', link)
+        });
+    }
+
+    async sendPasswordResetMail(to, name, link) {
+        const html = await fs.readFile('emails/passwordResetMail.html', 'utf-8');
+
+        await this.transporter.sendMail({
+            from: process.env.SMTP_USER,
+            to,
+            subject: `Відновлення пароля на ${process.env.CLIENT_URL.replace('https://', '')}`,
             text: '',
             html: html.replace('{name}', name).replace('{link}', link).replace('{handle-link}', link)
         });

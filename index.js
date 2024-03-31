@@ -34,6 +34,7 @@ cron.schedule(
 //    '*/2 * * * *', // кожні дві хвилини
     async () => {
         await UserService.deleteInactiveAccounts();
+        await UserService.deleteExpiredPasswordResetLink();
     },
     {
         timezone: 'Europe/Kiev'

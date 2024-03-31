@@ -8,6 +8,8 @@ const {
     activate,
     getActivationLink,
     refresh,
+    changeForgottenPassword,
+    forgotPassword,
     changePassword,
     getUsers,
     updateMyUser,
@@ -49,6 +51,8 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/get-activation-link/:userId', getActivationLink);
 router.get('/refresh', refresh);
+router.put('/change-forgotten-password', changeForgottenPassword);
+router.put('/forgot-password', forgotPassword);
 router.put('/change-password', authMiddleware, changePassword);
 router.get('/users', authMiddleware, getUsers);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
