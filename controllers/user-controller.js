@@ -40,7 +40,9 @@ class UserController {
     async logout(req, res, next) {
         try {
             const { refreshToken } = req.cookies;
+
             const token = await UserService.logout(refreshToken);
+
             res.clearCookie('refreshToken');
 
             return res.json(token);
@@ -83,6 +85,21 @@ class UserController {
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
             return res.json(userData);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async changePassword(req, res, next) {
+        try {
+            const { userId, oldPassword, newPassword } = req.body;
+            const { refreshToken } = req.cookies;
+
+            const token = await UserService.changePassword(userId, oldPassword, newPassword, refreshToken);
+
+            res.clearCookie('refreshToken');
+
+            return res.json(token);
         } catch (error) {
             next(error);
         }

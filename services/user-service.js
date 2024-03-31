@@ -34,6 +34,32 @@ class UserService {
         };
     }
 
+    async login(email, password) {
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+        }
+
+        const isPassEquals = await bcrypt.compare(password, user.password);
+        if (!isPassEquals) {
+            throw ApiError.BadRequest('Невірний пароль');
+        }
+
+        const userDto = new UserDto(user);
+        const tokens = TokenService.generateToken({ ...userDto });
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user: userDto,
+        };
+    }
+
+    async logout(refreshToken) {
+        const token = await TokenService.removeToken(refreshToken);
+        return token;
+    }
+
     async activate(activationLink) {
         const user = await UserModel.findOne({ activationLink });
         if (!user) {
@@ -83,32 +109,6 @@ class UserService {
         }
     }
 
-    async login(email, password) {
-        const user = await UserModel.findOne({ email });
-        if (!user) {
-            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
-        }
-
-        const isPassEquals = await bcrypt.compare(password, user.password);
-        if (!isPassEquals) {
-            throw ApiError.BadRequest('Невірний пароль');
-        }
-
-        const userDto = new UserDto(user);
-        const tokens = TokenService.generateToken({ ...userDto });
-        await TokenService.saveToken(userDto.id, tokens.refreshToken);
-
-        return {
-            ...tokens,
-            user: userDto,
-        };
-    }
-
-    async logout(refreshToken) {
-        const token = await TokenService.removeToken(refreshToken);
-        return token;
-    }
-
     async refresh(refreshToken) {
         if (!refreshToken) {
             throw ApiError.UnauthorizedError();
@@ -129,6 +129,27 @@ class UserService {
             ...tokens,
             user: userDto,
         };
+    }
+
+    async changePassword(userId, oldPassword, newPassword, refreshToken) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+        }
+
+        const isPassEquals = await bcrypt.compare(oldPassword, user.password);
+        if (!isPassEquals) {
+            throw ApiError.BadRequest('Ви ввели невірний старий пароль');
+        }
+
+        const hashPassword = await bcrypt.hash(newPassword, 3);
+
+        user.password = hashPassword;
+
+        await user.save();
+
+        const token = await TokenService.removeToken(refreshToken);
+        return token;
     }
 
     async getAllUsers() {

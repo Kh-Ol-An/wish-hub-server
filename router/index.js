@@ -4,10 +4,11 @@ const { body } = require('express-validator');
 const {
     registration,
     login,
-    refresh,
+    logout,
     activate,
     getActivationLink,
-    logout,
+    refresh,
+    changePassword,
     getUsers,
     updateMyUser,
     deleteMyUser,
@@ -48,11 +49,13 @@ router.post('/logout', logout);
 router.get('/activate/:link', activate);
 router.get('/get-activation-link/:userId', getActivationLink);
 router.get('/refresh', refresh);
+router.put('/change-password', authMiddleware, changePassword);
 router.get('/users', authMiddleware, getUsers);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
 router.post('/user/delete', authMiddleware, deleteMyUser);
 router.post('/friend', authMiddleware, addFriend);
 router.delete('/friend', authMiddleware, removeFriend);
+
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.post('/wish/book', authMiddleware, bookWish);
 router.post('/wish/cancel-book', authMiddleware, cancelBookWish);
