@@ -160,6 +160,8 @@ class UserService {
         user.passwordResetLinkExpires = undefined;
 
         await user.save();
+
+        return user.email;
     }
 
     async forgotPassword(email) {

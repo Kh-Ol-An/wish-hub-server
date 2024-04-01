@@ -94,9 +94,9 @@ class UserController {
         try {
             const { passwordResetLink, newPassword } = req.body;
 
-            await UserService.changeForgottenPassword(passwordResetLink, newPassword);
+            const userEmail = await UserService.changeForgottenPassword(passwordResetLink, newPassword);
 
-            return res.redirect(`${process.env.CLIENT_URL}/auth`);
+            return res.json(userEmail);
         } catch (error) {
             next(error);
         }
