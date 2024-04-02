@@ -3,7 +3,7 @@ const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 
 const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
     firstName: { type: String, required: true },
     lastName: { type: String },
     avatar: { type: String },

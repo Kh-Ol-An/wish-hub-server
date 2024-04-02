@@ -34,6 +34,44 @@ class UserService {
         };
     }
 
+    async googleAuthorization(email, isActivated, firstName, lastName, avatar) {
+        const user = await UserModel.findOne({ email });
+
+        if (user) {
+            const userDto = new UserDto(user);
+            const tokens = TokenService.generateToken({ ...userDto });
+            await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+            return {
+                ...tokens,
+                user: userDto,
+            };
+        }
+
+        const newUser = await UserModel.create({
+            email,
+            firstName: firstName.length > 0 ? firstName : 'Користувач',
+            lastName: lastName.length > 0 ? lastName : undefined,
+            avatar: avatar.length > 0 ? avatar : undefined,
+            isActivated: !!isActivated,
+        });
+
+        if (!isActivated) {
+            const activationLink = uuid.v4();
+            newUser.activationLink = activationLink;
+            await MailService.sendActivationMail(newUser.email, newUser.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
+        }
+
+        const userDto = new UserDto(newUser);
+        const tokens = TokenService.generateToken({ ...userDto });
+        await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user: userDto,
+        };
+    }
+
     async login(email, password) {
         const user = await UserModel.findOne({ email });
         if (!user) {

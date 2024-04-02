@@ -3,6 +3,7 @@ const multer = require('multer');
 const { body } = require('express-validator');
 const {
     registration,
+    googleAuthorization,
     login,
     logout,
     activate,
@@ -46,6 +47,7 @@ router.post(
     body('password').isLength({ min: 4, max: 32 }),
     registration,
 );
+router.post('/google-auth', googleAuthorization);
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/activate/:link', activate);
