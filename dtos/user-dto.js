@@ -1,6 +1,7 @@
 class UserDto {
     id;
     email;
+    hasPassword;
     firstName;
     lastName;
     avatar;
@@ -18,6 +19,7 @@ class UserDto {
     constructor(model) {
         this.id = model._id;
         this.email = model.email;
+        this.hasPassword = !!(model.password && model.password.length > 0);
         this.firstName = model.firstName;
         this.lastName = model.lastName;
         this.avatar = model.avatar;

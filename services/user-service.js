@@ -229,9 +229,11 @@ class UserService {
             throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
         }
 
-        const isPassEquals = await bcrypt.compare(oldPassword, user.password);
-        if (!isPassEquals) {
-            throw ApiError.BadRequest('Ви ввели невірний старий пароль');
+        if (user.password && user.password.length > 0) {
+            const isPassEquals = await bcrypt.compare(oldPassword, user.password);
+            if (!isPassEquals) {
+                throw ApiError.BadRequest('Ви ввели невірний старий пароль');
+            }
         }
 
         const hashPassword = await bcrypt.hash(newPassword, 3);
