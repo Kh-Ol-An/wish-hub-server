@@ -42,7 +42,7 @@ cron.schedule(
 );
 
 const start = async () => {
-    console.log('Start server: ', new Date(Date.now()));
+    console.log('Start server on time: ', new Date(Date.now()));
     try {
         await mongoose.connect(process.env.DB_URL);
         app.listen(PORT, () => console.log(`Server started on PORT: ${PORT}`));

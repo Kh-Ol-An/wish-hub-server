@@ -54,12 +54,16 @@ class UserService {
             lastName: lastName.length > 0 ? lastName : undefined,
             avatar: avatar.length > 0 ? avatar : undefined,
             isActivated: !!isActivated,
+            activationLink: isActivated ? null : uuid.v4(),
+            activationLinkExpires: isActivated ? null : Date.now() + LINK_WILL_EXPIRE_IN,
         });
 
         if (!isActivated) {
-            const activationLink = uuid.v4();
-            newUser.activationLink = activationLink;
-            await MailService.sendActivationMail(newUser.email, newUser.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
+            await MailService.sendActivationMail(
+                newUser.email,
+                newUser.firstName,
+                `${process.env.API_URL}/api/activate/${newUser.activationLink}`,
+            );
         }
 
         const userDto = new UserDto(newUser);
