@@ -144,7 +144,9 @@ class UserController {
 
     async getUsers(req, res, next) {
         try {
-            const users = await UserService.getAllUsers();
+            const page = req.query.page;
+            const limit = req.query.limit;
+            const users = await UserService.getAllUsers(page, limit);
 
             return res.json(users);
         } catch (error) {

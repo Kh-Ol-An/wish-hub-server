@@ -250,9 +250,11 @@ class UserService {
         return token;
     }
 
-    async getAllUsers() {
-        const users = await UserModel.find();
-        return users.map((user) => new UserDto(user)).sort((a, b) => b.updatedAt - a.updatedAt);
+    async getAllUsers(page, limit) {
+        const skip = (page - 1) * limit;
+        const users = await UserModel.find().skip(skip).limit(limit);
+        const allUsersDto = users.map(user => new UserDto(user));
+        return allUsersDto.sort((a, b) => b.updatedAt - a.updatedAt);
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
