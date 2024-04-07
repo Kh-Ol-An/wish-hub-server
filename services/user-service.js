@@ -21,7 +21,13 @@ class UserService {
         const hashPassword = await bcrypt.hash(password, 3);
         const activationLink = uuid.v4();
 
-        const user = await UserModel.create({ firstName, email, password: hashPassword, activationLink });
+        const user = await UserModel.create({
+            firstName,
+            email,
+            password: hashPassword,
+            activationLink,
+            activationLinkExpires: Date.now() + LINK_WILL_EXPIRE_IN,
+        });
         await MailService.sendActivationMail(email, firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
 
         const userDto = new UserDto(user);
@@ -54,8 +60,8 @@ class UserService {
             lastName: lastName.length > 0 ? lastName : undefined,
             avatar: avatar.length > 0 ? avatar : undefined,
             isActivated: !!isActivated,
-            activationLink: isActivated ? null : uuid.v4(),
-            activationLinkExpires: isActivated ? null : Date.now() + LINK_WILL_EXPIRE_IN,
+            activationLink: isActivated ? undefined : uuid.v4(),
+            activationLinkExpires: isActivated ? undefined : Date.now() + LINK_WILL_EXPIRE_IN,
         });
 
         if (!isActivated) {
@@ -113,8 +119,8 @@ class UserService {
         }
 
         user.isActivated = true;
-        user.activationLink = null;
-        user.activationLinkExpires = null;
+        user.activationLink = undefined;
+        user.activationLinkExpires = undefined;
         await user.save();
         return user.isActivated;
     }
