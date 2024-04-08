@@ -256,11 +256,25 @@ class UserService {
         return token;
     }
 
-    async getAllUsers(page, limit) {
+    async getUsers(page, limit, myUserId, userType, search) {
         const skip = (page - 1) * limit;
         const users = await UserModel.find().skip(skip).limit(limit);
-        const allUsersDto = users.map(user => new UserDto(user));
-        return allUsersDto.sort((a, b) => b.updatedAt - a.updatedAt);
+
+        let usersDto = users
+            .filter(user => user[userType]?.some(userId => userId.toString() === myUserId))
+            .map(user => new UserDto(user));
+
+        if (userType === 'all') {
+            usersDto = users.map(user => new UserDto(user));
+        }
+
+        usersDto = usersDto.filter(user => {
+            const fullName = `${user.firstName} ${user.lastName}`;
+            return fullName.toLowerCase().includes(search.toLowerCase());
+        });
+
+        return usersDto.sort((a, b) => b.updatedAt - a.updatedAt);
+
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
