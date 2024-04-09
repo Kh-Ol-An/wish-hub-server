@@ -256,25 +256,63 @@ class UserService {
         return token;
     }
 
+//    async getUsers(page, limit, myUserId, userType, search) {
+//        const skip = (page - 1) * limit;
+//        const users = await UserModel.find().skip(skip).limit(limit);
+//
+//        let usersDto = users
+//            .filter(user => user[userType]?.some(userId => userId.toString() === myUserId))
+//            .map(user => new UserDto(user));
+//
+//        if (userType === 'all') {
+//            usersDto = users.map(user => new UserDto(user));
+//        }
+//
+//        usersDto = usersDto.filter(user => {
+//            const fullName = `${user.firstName} ${user.lastName}`;
+//            return fullName.toLowerCase().includes(search.toLowerCase());
+//        });
+//
+//        return usersDto.sort((a, b) => b.updatedAt - a.updatedAt);
+//    }
+
     async getUsers(page, limit, myUserId, userType, search) {
-        const skip = (page - 1) * limit;
-        const users = await UserModel.find().skip(skip).limit(limit);
+        let query = {};
 
-        let usersDto = users
-            .filter(user => user[userType]?.some(userId => userId.toString() === myUserId))
-            .map(user => new UserDto(user));
-
-        if (userType === 'all') {
-            usersDto = users.map(user => new UserDto(user));
+        // Додати фільтрацію за типом користувача (userType)
+        if (userType !== 'all') {
+            switch (userType) {
+                case 'friends':
+                    query = { friends: myUserId };
+                    break;
+                case 'followTo':
+                    query = { followFrom: myUserId };
+                    break;
+                case 'followFrom':
+                    query = { followTo: myUserId };
+                    break;
+                default:
+                    break;
+            }
         }
 
-        usersDto = usersDto.filter(user => {
-            const fullName = `${user.firstName} ${user.lastName}`;
-            return fullName.toLowerCase().includes(search.toLowerCase());
-        });
+        // Додати пошук за ім'ям
+        if (search) {
+            query.$or = [
+                { firstName: { $regex: search, $options: 'i' } },
+                { lastName: { $regex: search, $options: 'i' } },
+            ];
+        }
 
-        return usersDto.sort((a, b) => b.updatedAt - a.updatedAt);
+        const skip = (page - 1) * limit;
 
+        // Виконати запит до бази даних
+        const users = await UserModel.find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort({ updatedAt: -1 }); // Сортувати за датою оновлення у зворотньому порядку
+
+        return users.map(user => new UserDto(user));
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
