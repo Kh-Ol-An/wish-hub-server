@@ -304,6 +304,9 @@ class UserService {
             ];
         }
 
+        // Виключити користувача, який робить запит
+        query._id = { $ne: myUserId };
+
         const skip = (page - 1) * limit;
 
         // Виконати запит до бази даних
