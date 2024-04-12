@@ -144,6 +144,8 @@ class UserService {
         user.activationLink = activationLink;
         user.activationLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
         await user.save();
+
+        return user.email;
     }
 
     async deleteInactiveAccounts() {

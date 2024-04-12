@@ -82,9 +82,9 @@ class UserController {
     async getActivationLink(req, res, next) {
         try {
             const userId = req.params.userId;
-            await UserService.generateActivationLink(userId);
+            const userEmail = await UserService.generateActivationLink(userId);
 
-//            return res.redirect(process.env.CLIENT_URL);
+            return res.json(userEmail);
         } catch (error) {
             next(error);
         }
