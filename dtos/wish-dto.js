@@ -31,6 +31,7 @@ class WishDto {
     show;
     name;
     price;
+    currency;
     address;
     description;
     executed;
@@ -45,6 +46,7 @@ class WishDto {
         this.show = model.show;
         this.name = model.name;
         this.price = model.price;
+        this.currency = model.currency;
         this.address = model.address;
         this.description = model.description;
         this.executed = model.executed;

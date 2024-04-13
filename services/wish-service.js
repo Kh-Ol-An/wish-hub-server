@@ -46,7 +46,7 @@ class WishService {
     };
 
     async createWish(body, files) {
-        const { userId, material, show, name, price, address, description } = body;
+        const { userId, material, show, name, price, currency, address, description } = body;
 
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -66,6 +66,7 @@ class WishService {
             show,
             name,
             price,
+            currency,
             address,
             description,
         });
@@ -95,7 +96,7 @@ class WishService {
     };
 
     async updateWish(body, files) {
-        const { id, userId, material, show, name, price, address, description } = body;
+        const { id, userId, material, show, name, price, currency, address, description } = body;
 
         const wish = await WishModel.findById(new ObjectId(id));
         if (!wish) {
@@ -178,6 +179,7 @@ class WishService {
         wish.show = show;
         wish.name = name;
         wish.price = price;
+        wish.currency = currency;
         wish.address = address;
         wish.description = description;
         wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));

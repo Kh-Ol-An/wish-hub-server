@@ -17,6 +17,7 @@ const WishSchema = new Schema({
             return this.material;
         }
     },
+    currency:  { type: String, enum: ['UAH', 'USD', 'EUR'] },
     address:  { type: String },
     description: { type: String },
     executed: { type: Boolean, default: false },
