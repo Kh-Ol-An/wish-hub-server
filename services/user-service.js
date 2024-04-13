@@ -258,26 +258,6 @@ class UserService {
         return token;
     }
 
-//    async getUsers(page, limit, myUserId, userType, search) {
-//        const skip = (page - 1) * limit;
-//        const users = await UserModel.find().skip(skip).limit(limit);
-//
-//        let usersDto = users
-//            .filter(user => user[userType]?.some(userId => userId.toString() === myUserId))
-//            .map(user => new UserDto(user));
-//
-//        if (userType === 'all') {
-//            usersDto = users.map(user => new UserDto(user));
-//        }
-//
-//        usersDto = usersDto.filter(user => {
-//            const fullName = `${user.firstName} ${user.lastName}`;
-//            return fullName.toLowerCase().includes(search.toLowerCase());
-//        });
-//
-//        return usersDto.sort((a, b) => b.updatedAt - a.updatedAt);
-//    }
-
     async getUsers(page, limit, myUserId, userType, search) {
         let query = {};
 
@@ -313,11 +293,18 @@ class UserService {
 
         // Виконати запит до бази даних
         const users = await UserModel.find(query)
+            .sort({ updatedAt: -1 })
             .skip(skip)
-            .limit(limit)
-            .sort({ updatedAt: -1 }); // Сортувати за датою оновлення у зворотньому порядку
+            .limit(limit);
 
-        return users.map(user => new UserDto(user));
+        const usersDto = users.map(user => new UserDto(user));
+
+        const followFromCount = await UserModel.countDocuments({ followFrom: myUserId });
+
+        return {
+            followFromCount,
+            users: usersDto,
+        };
     }
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
