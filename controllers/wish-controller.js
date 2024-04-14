@@ -33,6 +33,18 @@ class WishController {
         }
     }
 
+    async getWish(req, res, next) {
+        try {
+            const { wishId } = req.query;
+
+            const wish = await WishService.getWish(wishId);
+
+            return res.json(wish);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async deleteWish(req, res, next) {
         try {
             const { userId, wishId } = req.query;

@@ -25,8 +25,9 @@ const {
     doneWish,
     undoneWish,
     updateWish,
-    getWishList,
     deleteWish,
+    getWishList,
+    getWish,
 } = require('../controllers/wish-controller');
 const authMiddleware = require('../middlewares/auth-middleware');
 const { MAX_NUMBER_OF_FILES } = require('../utils/variables');
@@ -70,5 +71,6 @@ router.post('/wish/undone', authMiddleware, undoneWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.delete('/wish', authMiddleware, deleteWish);
 router.get('/wishes', authMiddleware, getWishList);
+router.get('/wish', authMiddleware, getWish);
 
 module.exports = router;
