@@ -268,10 +268,10 @@ class UserService {
                     query = { friends: myUserId };
                     break;
                 case 'followTo':
-                    query = { followFrom: myUserId };
+                    query = { followFrom: myUserId }; // я за ними слідкую
                     break;
                 case 'followFrom':
-                    query = { followTo: myUserId };
+                    query = { followTo: myUserId }; // вони за мною слідкують
                     break;
                 default:
                     break;
@@ -299,7 +299,7 @@ class UserService {
 
         const usersDto = users.map(user => new UserDto(user));
 
-        const followFromCount = await UserModel.countDocuments({ followFrom: myUserId });
+        const followFromCount = await UserModel.countDocuments({ followTo: myUserId }); // кількість користувачів, які слідкують за мною
 
         return {
             followFromCount,
