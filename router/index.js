@@ -71,6 +71,6 @@ router.post('/wish/undone', authMiddleware, undoneWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.delete('/wish', authMiddleware, deleteWish);
 router.get('/wishes', authMiddleware, getWishList);
-router.get('/wish', authMiddleware, getWish);
+router.get('/wish', getWish);
 
 module.exports = router;
