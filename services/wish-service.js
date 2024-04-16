@@ -219,12 +219,12 @@ class WishService {
     async getWish(wishId) {
         const wish = await WishModel.findById(wishId);
         if (!wish) {
-            throw new Error(`Бажання з id: "${wishId}" не знайдено`);
+            throw ApiError.BadRequest(`Бажання з id: "${wishId}" не знайдено`);
         }
 
         const user = await UserModel.findById(wish.userId);
         if (!user) {
-            throw new Error(`Користувача створившого бажання з id: "${wishId}" не знайдено`);
+            throw ApiError.BadRequest(`Користувача створившого бажання з id: "${wishId}" не знайдено`);
         }
 
         return {
