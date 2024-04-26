@@ -42,12 +42,7 @@ const fields = Array.from(
 
 const router = new Router();
 
-router.post(
-    '/registration',
-    body('email').isEmail(),
-    body('password').isLength({ min: 4, max: 32 }),
-    registration,
-);
+router.post('/registration', body('email').isEmail(), registration);
 router.post('/google-auth', googleAuthorization);
 router.post('/login', login);
 router.post('/logout', logout);

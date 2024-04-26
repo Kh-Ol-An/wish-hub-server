@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongoose').Types;
 const bcrypt = require('bcrypt');
+const CryptoJS = require('crypto-js');
 const uuid = require('uuid');
 const UserModel = require('../models/user-model');
 const TokenModel = require('../models/token-model');
@@ -18,13 +19,17 @@ class UserService {
             throw ApiError.BadRequest(`Користувач з електронною адресою ${email} вже існує`);
         }
 
-        const hashPassword = await bcrypt.hash(password, 3);
+        const decryptedPassword = CryptoJS
+            .AES
+            .decrypt(password, process.env.CRYPTO_JS_SECRET)
+            .toString(CryptoJS.enc.Utf8);
+        const hashedPassword = await bcrypt.hash(decryptedPassword, 3);
         const activationLink = uuid.v4();
 
         const user = await UserModel.create({
             firstName,
             email,
-            password: hashPassword,
+            password: hashedPassword,
             activationLink,
             activationLinkExpires: Date.now() + LINK_WILL_EXPIRE_IN,
         });
@@ -88,7 +93,11 @@ class UserService {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
         }
 
-        const isPassEquals = await bcrypt.compare(password, user.password);
+        const decryptedPassword = CryptoJS
+            .AES
+            .decrypt(password, process.env.CRYPTO_JS_SECRET)
+            .toString(CryptoJS.enc.Utf8);
+        const isPassEquals = await bcrypt.compare(decryptedPassword, user.password);
         if (!isPassEquals) {
             throw ApiError.BadRequest('Невірний пароль');
         }
@@ -203,8 +212,12 @@ class UserService {
             throw ApiError.BadRequest('Посилання для зміни паролю вже не дійсне');
         }
 
-        const hashPassword = await bcrypt.hash(newPassword, 3);
-        user.password = hashPassword;
+        const decryptedNewPassword = CryptoJS
+            .AES
+            .decrypt(newPassword, process.env.CRYPTO_JS_SECRET)
+            .toString(CryptoJS.enc.Utf8);
+        const hashedPassword = await bcrypt.hash(decryptedNewPassword, 3);
+        user.password = hashedPassword;
 
         user.passwordResetLink = undefined;
         user.passwordResetLinkExpires = undefined;
@@ -241,16 +254,23 @@ class UserService {
             throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
         }
 
+        const decryptedOldPassword = CryptoJS
+            .AES
+            .decrypt(oldPassword, process.env.CRYPTO_JS_SECRET)
+            .toString(CryptoJS.enc.Utf8);
         if (user.password && user.password.length > 0) {
-            const isPassEquals = await bcrypt.compare(oldPassword, user.password);
+            const isPassEquals = await bcrypt.compare(decryptedOldPassword, user.password);
             if (!isPassEquals) {
                 throw ApiError.BadRequest('Ви ввели невірний старий пароль');
             }
         }
 
-        const hashPassword = await bcrypt.hash(newPassword, 3);
-
-        user.password = hashPassword;
+        const decryptedNewPassword = CryptoJS
+            .AES
+            .decrypt(newPassword, process.env.CRYPTO_JS_SECRET)
+            .toString(CryptoJS.enc.Utf8);
+        const hashedPassword = await bcrypt.hash(decryptedNewPassword, 3);
+        user.password = hashedPassword;
 
         await user.save();
 
@@ -328,7 +348,11 @@ class UserService {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
         }
 
-        const isPassEquals = await bcrypt.compare(password, userToBeDeleted.password);
+        const decryptedPassword = CryptoJS
+            .AES
+            .decrypt(password, process.env.CRYPTO_JS_SECRET)
+            .toString(CryptoJS.enc.Utf8);
+        const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
         if (!isPassEquals) {
             throw ApiError.BadRequest('Невірний пароль');
         }
