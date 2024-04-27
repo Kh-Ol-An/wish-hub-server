@@ -9,7 +9,7 @@ const AwsService = require('../services/aws-service');
 const getImageId = require('../utils/get-image-id');
 const generateFileId = require('../utils/generate-file-id');
 const { MAX_FILE_SIZE_IN_MB, MAX_NUMBER_OF_FILES } = require('../utils/variables');
-const { decryptedData } = require('../utils/encryption-data');
+const { decryptData } = require('../utils/encryption-data');
 
 class WishService {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -54,7 +54,7 @@ class WishService {
             throw new Error('Користувач який створює бажання не знайдений');
         }
 
-        const unencryptedName = show === 'all' ? name : decryptedData(name);
+        const unencryptedName = show === 'all' ? name : decryptData(name);
         WishService.wishValidator(unencryptedName, Object.keys(files).length);
 
         const potentialWish = await WishModel.findOne({ user: userId, name: unencryptedName });
@@ -67,8 +67,8 @@ class WishService {
             material,
             show,
             name,
-            price: show === 'all' ? price : decryptedData(price),
-            currency: show === 'all' ? currency : decryptedData(currency),
+            price: show === 'all' ? price : decryptData(price),
+            currency: show === 'all' ? currency : decryptData(currency),
             address,
             description,
         });
@@ -105,7 +105,7 @@ class WishService {
             throw ApiError.BadRequest(`Бажання з id: "${id}" не знайдено`);
         }
 
-        const unencryptedName = show === 'all' ? name : decryptedData(name);
+        const unencryptedName = show === 'all' ? name : decryptData(name);
 
         let uploadedImageLength = 0;
         for (const key in body) {
@@ -183,8 +183,8 @@ class WishService {
         wish.material = material;
         wish.show = show;
         wish.name = name;
-        wish.price = show === 'all' ? price : decryptedData(price);
-        wish.currency = show === 'all' ? currency : decryptedData(currency)
+        wish.price = show === 'all' ? price : decryptData(price);
+        wish.currency = show === 'all' ? currency : decryptData(currency)
         wish.address = address;
         wish.description = description;
         wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));

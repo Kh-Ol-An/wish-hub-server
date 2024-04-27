@@ -1,4 +1,4 @@
-const { encryptedData } = require('../utils/encryption-data');
+const { encryptData } = require('../utils/encryption-data');
 
 const dataDto = (show, data) => {
     if (data?.length > 0) {
@@ -6,7 +6,7 @@ const dataDto = (show, data) => {
             return data;
         }
 
-        return encryptedData(data);
+        return encryptData(data);
     }
 
     return data;
