@@ -1,6 +1,5 @@
 const { ObjectId } = require('mongoose').Types;
 const bcrypt = require('bcrypt');
-const CryptoJS = require('crypto-js');
 const uuid = require('uuid');
 const UserModel = require('../models/user-model');
 const TokenModel = require('../models/token-model');
@@ -11,6 +10,7 @@ const AwsService = require('./aws-service');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
 const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
+const { decryptedData } = require("../utils/encryption-data");
 
 class UserService {
     async registration(firstName, email, password) {
@@ -19,10 +19,7 @@ class UserService {
             throw ApiError.BadRequest(`Користувач з електронною адресою ${email} вже існує`);
         }
 
-        const decryptedPassword = CryptoJS
-            .AES
-            .decrypt(password, process.env.CRYPTO_JS_SECRET)
-            .toString(CryptoJS.enc.Utf8);
+        const decryptedPassword = decryptedData(password);
         const hashedPassword = await bcrypt.hash(decryptedPassword, 3);
         const activationLink = uuid.v4();
 
@@ -93,10 +90,7 @@ class UserService {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
         }
 
-        const decryptedPassword = CryptoJS
-            .AES
-            .decrypt(password, process.env.CRYPTO_JS_SECRET)
-            .toString(CryptoJS.enc.Utf8);
+        const decryptedPassword = decryptedData(password);
         const isPassEquals = await bcrypt.compare(decryptedPassword, user.password);
         if (!isPassEquals) {
             throw ApiError.BadRequest('Невірний пароль');
@@ -212,10 +206,7 @@ class UserService {
             throw ApiError.BadRequest('Посилання для зміни паролю вже не дійсне');
         }
 
-        const decryptedNewPassword = CryptoJS
-            .AES
-            .decrypt(newPassword, process.env.CRYPTO_JS_SECRET)
-            .toString(CryptoJS.enc.Utf8);
+        const decryptedNewPassword = decryptedData(newPassword);
         const hashedPassword = await bcrypt.hash(decryptedNewPassword, 3);
         user.password = hashedPassword;
 
@@ -254,10 +245,7 @@ class UserService {
             throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
         }
 
-        const decryptedOldPassword = CryptoJS
-            .AES
-            .decrypt(oldPassword, process.env.CRYPTO_JS_SECRET)
-            .toString(CryptoJS.enc.Utf8);
+        const decryptedOldPassword = decryptedData(oldPassword);
         if (user.password && user.password.length > 0) {
             const isPassEquals = await bcrypt.compare(decryptedOldPassword, user.password);
             if (!isPassEquals) {
@@ -265,10 +253,7 @@ class UserService {
             }
         }
 
-        const decryptedNewPassword = CryptoJS
-            .AES
-            .decrypt(newPassword, process.env.CRYPTO_JS_SECRET)
-            .toString(CryptoJS.enc.Utf8);
+        const decryptedNewPassword = decryptedData(newPassword);
         const hashedPassword = await bcrypt.hash(decryptedNewPassword, 3);
         user.password = hashedPassword;
 
@@ -348,10 +333,7 @@ class UserService {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
         }
 
-        const decryptedPassword = CryptoJS
-            .AES
-            .decrypt(password, process.env.CRYPTO_JS_SECRET)
-            .toString(CryptoJS.enc.Utf8);
+        const decryptedPassword = decryptedData(password);
         const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
         if (!isPassEquals) {
             throw ApiError.BadRequest('Невірний пароль');
