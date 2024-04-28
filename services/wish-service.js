@@ -9,7 +9,7 @@ const AwsService = require('../services/aws-service');
 const getImageId = require('../utils/get-image-id');
 const generateFileId = require('../utils/generate-file-id');
 const { MAX_FILE_SIZE_IN_MB, MAX_NUMBER_OF_FILES } = require('../utils/variables');
-const { decryptData } = require('../utils/encryption-data');
+const { encryptData, decryptData } = require('../utils/encryption-data');
 
 class WishService {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -83,7 +83,7 @@ class WishService {
             );
 
             images.push({
-                path: image,
+                path: show === 'all' ? image : encryptData(image),
                 position: Number(key.split('-')[1]),
             });
         }
@@ -140,7 +140,7 @@ class WishService {
 
             // додаємо картинку до загального масиву з валідною позицією
             allImages.push({
-                path,
+                path: show === 'all' ? path : encryptData(path),
                 position: Number(key.split('-')[1]),
             });
         }
@@ -151,7 +151,9 @@ class WishService {
                 const parsedImage = JSON.parse(body[key]);
                 if (parsedImage.delete) {
                     await AwsService.deleteFile(
-                        `user-${userId}/wish-${id}/${getImageId(parsedImage.path)}`,
+                        `user-${userId}/wish-${id}/${
+                            getImageId(show === 'all' ? parsedImage.path : decryptData(parsedImage.path))
+                        }`,
                     );
                 }
 
