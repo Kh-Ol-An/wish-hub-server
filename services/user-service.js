@@ -327,20 +327,22 @@ class UserService {
         return new UserDto(user);
     }
 
-    async deleteMyUser(id, email, password ) {
+    async deleteMyUser(id, email, password) {
         const userToBeDeleted = await UserModel.findOne({ email });
         if (!userToBeDeleted) {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
         }
 
-        const decryptedPassword = decryptData(password);
-        const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
-        if (!isPassEquals) {
-            throw ApiError.BadRequest('Невірний пароль');
-        }
-
         if (userToBeDeleted._id.toString() !== id) {
             throw ApiError.BadRequest('Помилка при вводі даних');
+        }
+
+        if (userToBeDeleted.password && userToBeDeleted.password.length > 0) {
+            const decryptedPassword = decryptData(password);
+            const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
+            if (!isPassEquals) {
+                throw ApiError.BadRequest('Невірний пароль');
+            }
         }
 
         const deletedUser = await UserModel.findByIdAndDelete(id);
