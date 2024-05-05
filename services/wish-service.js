@@ -55,6 +55,9 @@ class WishService {
         }
 
         const unencryptedName = show === 'all' ? name : decryptData(name);
+        console.log('show: ', show)
+        console.log('name: ', name)
+        console.log('unencryptedName: ', unencryptedName)
         WishService.wishValidator(unencryptedName, Object.keys(files).length);
 
         const potentialWish = await WishModel.findOne({ user: userId, name: unencryptedName });
