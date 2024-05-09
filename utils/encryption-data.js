@@ -14,9 +14,6 @@ const decryptData = data => {
     }
 };
 
-//const encryptData = data => data;
-//const decryptData = data => data;
-
 module.exports = {
     encryptData,
     decryptData,
