@@ -1,16 +1,16 @@
-//const { encryptData } = require('../utils/encryption-data');
+const { encryptData } = require('../utils/encryption-data');
 
-//const dataDto = (show, data) => {
-//    if (data?.length > 0) {
-//        if (show === 'all') {
-//            return data;
-//        }
-//
-//        return encryptData(data);
-//    }
-//
-//    return data;
-//};
+const dataDto = (show, data) => {
+    if (data?.length > 0) {
+        if (show === 'all') {
+            return data;
+        }
+
+        return encryptData(data);
+    }
+
+    return data;
+};
 
 class ImageDto {
     id;
@@ -59,10 +59,8 @@ class WishDto {
         this.material = model.material;
         this.show = model.show;
         this.name = model.name;
-//        this.price = dataDto(model.show, model.price);
-//        this.currency = dataDto(model.show, model.currency);
-        this.price = model.price;
-        this.currency = model.currency;
+        this.price = dataDto(model.show, model.price);
+        this.currency = dataDto(model.show, model.currency);
         this.address = model.address;
         this.description = model.description;
         this.executed = model.executed;
