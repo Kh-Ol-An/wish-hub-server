@@ -37,7 +37,7 @@ cron.schedule(
         await UserService.deleteExpiredPasswordResetLink();
     },
     {
-        timezone: 'Europe/Kiev'
+        timezone: 'UTC'
     },
 );
 
