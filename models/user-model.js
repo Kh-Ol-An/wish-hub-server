@@ -4,6 +4,7 @@ const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String },
+    lang: { type: String, default: 'en', enum: ['en', 'uk'] },
     firstName: { type: String, required: true },
     lastName: { type: String },
     avatar: { type: String },

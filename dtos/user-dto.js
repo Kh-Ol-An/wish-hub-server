@@ -2,6 +2,7 @@ class UserDto {
     id;
     email;
     hasPassword;
+    lang;
     firstName;
     lastName;
     avatar;
@@ -20,6 +21,7 @@ class UserDto {
         this.id = model._id;
         this.email = model.email;
         this.hasPassword = !!(model.password && model.password.length > 0);
+        this.lang = model.lang;
         this.firstName = model.firstName;
         this.lastName = model.lastName;
         this.avatar = model.avatar;

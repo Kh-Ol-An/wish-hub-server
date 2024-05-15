@@ -14,6 +14,7 @@ const {
     changePassword,
     getUsers,
     updateMyUser,
+    changeLang,
     deleteMyUser,
     addFriend,
     removeFriend,
@@ -54,6 +55,7 @@ router.put('/forgot-password', forgotPassword);
 router.put('/change-password', authMiddleware, changePassword);
 router.get('/users', authMiddleware, getUsers);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);
+router.put('/lang', authMiddleware, changeLang);
 router.post('/user/delete', authMiddleware, deleteMyUser);
 router.post('/friend', authMiddleware, addFriend);
 router.delete('/friend', authMiddleware, removeFriend);

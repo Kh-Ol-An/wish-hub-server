@@ -13,8 +13,8 @@ class UserController {
                 return next(ApiError.BadRequest('Помилка при валідації', errors.array()));
             }
 
-            const { firstName, email, password } = req.body;
-            const userData = await UserService.registration(firstName, email, password);
+            const { firstName, email, password, lang } = req.body;
+            const userData = await UserService.registration(firstName, email, password, lang);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -26,8 +26,8 @@ class UserController {
 
     async googleAuthorization(req, res, next) {
         try {
-            const { email, isActivated, firstName, lastName, avatar } = req.body;
-            const userData = await UserService.googleAuthorization(email, isActivated, firstName, lastName, avatar);
+            const { email, lang, isActivated, firstName, lastName, avatar } = req.body;
+            const userData = await UserService.googleAuthorization(email, lang, isActivated, firstName, lastName, avatar);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -39,8 +39,8 @@ class UserController {
 
     async login(req, res, next) {
         try {
-            const { email, password } = req.body;
-            const userData = await UserService.login(email, password);
+            const { email, password, lang } = req.body;
+            const userData = await UserService.login(email, password, lang);
 
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
@@ -172,6 +172,18 @@ class UserController {
             }
 
             const user = await UserService.updateMyUser(id, firstName, lastName, birthday, avatarPath);
+
+            return res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async changeLang(req, res, next) {
+        try {
+            const { userId, lang } = req.body;
+
+            const user = await UserService.changeLang(userId, lang);
 
             return res.json(user);
         } catch (error) {

@@ -13,7 +13,7 @@ const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 const { decryptData } = require("../utils/encryption-data");
 
 class UserService {
-    async registration(firstName, email, password) {
+    async registration(firstName, email, password, lang) {
         const candidate = await UserModel.findOne({ email });
         if (candidate) {
             throw ApiError.BadRequest(`Користувач з електронною адресою ${email} вже існує`);
@@ -27,6 +27,7 @@ class UserService {
             firstName,
             email,
             password: hashedPassword,
+            lang,
             activationLink,
             activationLinkExpires: Date.now() + LINK_WILL_EXPIRE_IN,
         });
@@ -42,10 +43,12 @@ class UserService {
         };
     }
 
-    async googleAuthorization(email, isActivated, firstName, lastName, avatar) {
+    async googleAuthorization(email, lang, isActivated, firstName, lastName, avatar) {
         const user = await UserModel.findOne({ email });
 
         if (user) {
+            user.lang = lang;
+
             const userDto = new UserDto(user);
             const tokens = TokenService.generateToken({ ...userDto });
             await TokenService.saveToken(userDto.id, tokens.refreshToken);
@@ -58,6 +61,7 @@ class UserService {
 
         const newUser = await UserModel.create({
             email,
+            lang,
             firstName: firstName.length > 0 ? firstName : 'Користувач',
             lastName: lastName.length > 0 ? lastName : undefined,
             avatar: avatar.length > 0 ? avatar : undefined,
@@ -84,7 +88,7 @@ class UserService {
         };
     }
 
-    async login(email, password) {
+    async login(email, password, lang) {
         const user = await UserModel.findOne({ email });
         if (!user) {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
@@ -95,6 +99,8 @@ class UserService {
         if (!isPassEquals) {
             throw ApiError.BadRequest('Невірний пароль');
         }
+
+        user.lang = lang;
 
         const userDto = new UserDto(user);
         const tokens = TokenService.generateToken({ ...userDto });
@@ -118,14 +124,15 @@ class UserService {
         }
 
         if (user.activationLinkExpires < Date.now()) {
-            return user.isActivated;
+            user.isActivated = false;
+            return false;
         }
 
         user.isActivated = true;
         user.activationLink = undefined;
         user.activationLinkExpires = undefined;
         await user.save();
-        return user.isActivated;
+        return true;
     }
 
     async generateActivationLink(userId) {
@@ -322,6 +329,18 @@ class UserService {
         user.lastName = lastName;
         user.birthday = birthday;
         avatar !== null && (user.avatar = avatar);
+        await user.save();
+
+        return new UserDto(user);
+    }
+
+    async changeLang(userId, lang) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+        }
+
+        user.lang = lang;
         await user.save();
 
         return new UserDto(user);
