@@ -22,47 +22,7 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
-
-    async googleAuthorization(req, res, next) {
-        try {
-            const { email, lang, isActivated, firstName, lastName, avatar } = req.body;
-            const userData = await UserService.googleAuthorization(email, lang, isActivated, firstName, lastName, avatar);
-
-            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
-
-            return res.json(userData);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async login(req, res, next) {
-        try {
-            const { email, password, lang } = req.body;
-            const userData = await UserService.login(email, password, lang);
-
-            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
-
-            return res.json(userData);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async logout(req, res, next) {
-        try {
-            const { refreshToken } = req.cookies;
-
-            const token = await UserService.logout(refreshToken);
-
-            res.clearCookie('refreshToken');
-
-            return res.json(token);
-        } catch (error) {
-            next(error);
-        }
-    }
+    };
 
     async activate(req, res, next) {
         try {
@@ -77,7 +37,7 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     async getActivationLink(req, res, next) {
         try {
@@ -88,7 +48,47 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
+    };
+
+    async googleAuthorization(req, res, next) {
+        try {
+            const { email, lang, isActivated, firstName, lastName, avatar } = req.body;
+            const userData = await UserService.googleAuthorization(email, lang, isActivated, firstName, lastName, avatar);
+
+            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+
+            return res.json(userData);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    async login(req, res, next) {
+        try {
+            const { email, password, lang } = req.body;
+            const userData = await UserService.login(email, password, lang);
+
+            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+
+            return res.json(userData);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    async logout(req, res, next) {
+        try {
+            const { refreshToken } = req.cookies;
+
+            const token = await UserService.logout(refreshToken);
+
+            res.clearCookie('refreshToken');
+
+            return res.json(token);
+        } catch (error) {
+            next(error);
+        }
+    };
 
     async refresh(req, res, next) {
         try {
@@ -101,19 +101,7 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
-
-    async changeForgottenPassword(req, res, next) {
-        try {
-            const { passwordResetLink, newPassword } = req.body;
-
-            const userEmail = await UserService.changeForgottenPassword(passwordResetLink, newPassword);
-
-            return res.json(userEmail);
-        } catch (error) {
-            next(error);
-        }
-    }
+    };
 
     async forgotPassword(req, res, next) {
         try {
@@ -125,7 +113,19 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
+    };
+
+    async changeForgottenPassword(req, res, next) {
+        try {
+            const { passwordResetLink, newPassword } = req.body;
+
+            const userEmail = await UserService.changeForgottenPassword(passwordResetLink, newPassword);
+
+            return res.json(userEmail);
+        } catch (error) {
+            next(error);
+        }
+    };
 
     async changePassword(req, res, next) {
         try {
@@ -140,18 +140,19 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
-    async getUsers(req, res, next) {
+    async changeLang(req, res, next) {
         try {
-            const { page, limit, myUserId, userType, search } = req.query;
-            const usersData = await UserService.getUsers(page, limit, myUserId, userType, search);
+            const { userId, lang } = req.body;
 
-            return res.json(usersData);
+            const user = await UserService.changeLang(userId, lang);
+
+            return res.json(user);
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     async updateMyUser(req, res, next) {
         try {
@@ -177,31 +178,7 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
-
-    async changeLang(req, res, next) {
-        try {
-            const { userId, lang } = req.body;
-
-            const user = await UserService.changeLang(userId, lang);
-
-            return res.json(user);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async deleteMyUser(req, res, next) {
-        try {
-            const { id, email, password } = req.body;
-
-            const deletedUserId = await UserService.deleteMyUser(id, email, password);
-
-            return res.json(deletedUserId);
-        } catch (error) {
-            next(error);
-        }
-    }
+    };
 
     async addFriend(req, res, next) {
         try {
@@ -213,7 +190,7 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
+    };
 
     async removeFriend(req, res, next) {
         try {
@@ -225,7 +202,30 @@ class UserController {
         } catch (error) {
             next(error);
         }
-    }
+    };
+
+    async deleteMyUser(req, res, next) {
+        try {
+            const { id, email, password } = req.body;
+
+            const deletedUserId = await UserService.deleteMyUser(id, email, password);
+
+            return res.json(deletedUserId);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    async getUsers(req, res, next) {
+        try {
+            const { page, limit, myUserId, userType, search } = req.query;
+            const usersData = await UserService.getUsers(page, limit, myUserId, userType, search);
+
+            return res.json(usersData);
+        } catch (error) {
+            next(error);
+        }
+    };
 }
 
 module.exports = new UserController();

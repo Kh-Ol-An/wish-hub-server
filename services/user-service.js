@@ -41,7 +41,71 @@ class UserService {
             ...tokens,
             user: userDto,
         };
-    }
+    };
+
+    async activate(activationLink) {
+        const user = await UserModel.findOne({ activationLink });
+        if (!user) {
+            throw ApiError.BadRequest('Невірне посилання для активації');
+        }
+
+        if (user.activationLinkExpires < Date.now()) {
+            user.isActivated = false;
+            return false;
+        }
+
+        user.isActivated = true;
+        user.activationLink = undefined;
+        user.activationLinkExpires = undefined;
+        await user.save();
+        return true;
+    };
+
+    async generateActivationLink(userId) {
+        const user = await UserModel.findOne(new ObjectId(userId));
+        if (!user) {
+            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+        }
+
+        if (user.isActivated) return;
+
+        let activationLink = user.activationLink;
+        if (!user.activationLink) {
+            activationLink = uuid.v4();
+        }
+
+        await MailService.sendActivationMail(user.email, user.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
+
+        user.isActivated = false;
+        user.activationLink = activationLink;
+        user.activationLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
+        await user.save();
+
+        return user.email;
+    };
+
+    async deleteInactiveAccounts() {
+        const inactiveAccounts = await UserModel.find({
+            isActivated: false,
+            activationLinkExpires: { $lt: Date.now() },
+        });
+
+        for (const account of inactiveAccounts) {
+            await UserModel.deleteOne({ _id: account._id });
+        }
+    };
+
+    async deleteExpiredPasswordResetLink() {
+        const accountsWithExpiredLinkPasswordReset = await UserModel.find({
+            passwordResetLinkExpires: { $lt: Date.now() },
+        });
+
+        for (const account of accountsWithExpiredLinkPasswordReset) {
+            account.passwordResetLink = undefined;
+            account.passwordResetLinkExpires = undefined;
+            await account.save();
+        }
+    };
 
     async googleAuthorization(email, lang, isActivated, firstName, lastName, avatar) {
         const user = await UserModel.findOne({ email });
@@ -86,7 +150,7 @@ class UserService {
             ...tokens,
             user: userDto,
         };
-    }
+    };
 
     async login(email, password, lang) {
         const user = await UserModel.findOne({ email });
@@ -110,76 +174,12 @@ class UserService {
             ...tokens,
             user: userDto,
         };
-    }
+    };
 
     async logout(refreshToken) {
         const token = await TokenService.removeToken(refreshToken);
         return token;
-    }
-
-    async activate(activationLink) {
-        const user = await UserModel.findOne({ activationLink });
-        if (!user) {
-            throw ApiError.BadRequest('Невірне посилання для активації');
-        }
-
-        if (user.activationLinkExpires < Date.now()) {
-            user.isActivated = false;
-            return false;
-        }
-
-        user.isActivated = true;
-        user.activationLink = undefined;
-        user.activationLinkExpires = undefined;
-        await user.save();
-        return true;
-    }
-
-    async generateActivationLink(userId) {
-        const user = await UserModel.findOne(new ObjectId(userId));
-        if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
-        }
-
-        if (user.isActivated) return;
-
-        let activationLink = user.activationLink;
-        if (!user.activationLink) {
-            activationLink = uuid.v4();
-        }
-
-        await MailService.sendActivationMail(user.email, user.firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
-
-        user.isActivated = false;
-        user.activationLink = activationLink;
-        user.activationLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
-        await user.save();
-
-        return user.email;
-    }
-
-    async deleteInactiveAccounts() {
-        const inactiveAccounts = await UserModel.find({
-            isActivated: false,
-            activationLinkExpires: { $lt: Date.now() },
-        });
-
-        for (const account of inactiveAccounts) {
-            await UserModel.deleteOne({ _id: account._id });
-        }
-    }
-
-    async deleteExpiredPasswordResetLink() {
-        const accountsWithExpiredLinkPasswordReset = await UserModel.find({
-            passwordResetLinkExpires: { $lt: Date.now() },
-        });
-
-        for (const account of accountsWithExpiredLinkPasswordReset) {
-            account.passwordResetLink = undefined;
-            account.passwordResetLinkExpires = undefined;
-            await account.save();
-        }
-    }
+    };
 
     async refresh(refreshToken) {
         if (!refreshToken) {
@@ -201,7 +201,28 @@ class UserService {
             ...tokens,
             user: userDto,
         };
-    }
+    };
+
+    async forgotPassword(email) {
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+        }
+
+        const passwordResetLink = uuid.v4();
+        await MailService.sendPasswordResetMail(
+            email,
+            user.firstName,
+            `${process.env.CLIENT_URL}/change-forgotten-password/${passwordResetLink}`,
+        );
+
+        user.passwordResetLink = passwordResetLink;
+        user.passwordResetLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
+
+        await user.save();
+
+        return user.email;
+    };
 
     async changeForgottenPassword(passwordResetLink, newPassword) {
         const user = await UserModel.findOne({ passwordResetLink });
@@ -223,28 +244,7 @@ class UserService {
         await user.save();
 
         return user.email;
-    }
-
-    async forgotPassword(email) {
-        const user = await UserModel.findOne({ email });
-        if (!user) {
-            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
-        }
-
-        const passwordResetLink = uuid.v4();
-        await MailService.sendPasswordResetMail(
-            email,
-            user.firstName,
-            `${process.env.CLIENT_URL}/change-forgotten-password/${passwordResetLink}`,
-        );
-
-        user.passwordResetLink = passwordResetLink;
-        user.passwordResetLinkExpires = Date.now() + LINK_WILL_EXPIRE_IN;
-
-        await user.save();
-
-        return user.email;
-    }
+    };
 
     async changePassword(userId, oldPassword, newPassword, refreshToken) {
         const user = await UserModel.findById(userId);
@@ -268,56 +268,19 @@ class UserService {
 
         const token = await TokenService.removeToken(refreshToken);
         return token;
-    }
+    };
 
-    async getUsers(page, limit, myUserId, userType, search) {
-        let query = {};
-
-        // Додати фільтрацію за типом користувача (userType)
-        if (userType !== 'all') {
-            switch (userType) {
-                case 'friends':
-                    query = { friends: myUserId };
-                    break;
-                case 'followTo':
-                    query = { followFrom: myUserId }; // я за ними слідкую
-                    break;
-                case 'followFrom':
-                    query = { followTo: myUserId }; // вони за мною слідкують
-                    break;
-                default:
-                    break;
-            }
+    async changeLang(userId, lang) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
         }
 
-        // Додати пошук за ім'ям
-        if (search) {
-            query.$or = [
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
-            ];
-        }
+        user.lang = lang;
+        await user.save();
 
-        // Виключити користувача, який робить запит
-        query._id = { $ne: myUserId };
-
-        const skip = (page - 1) * limit;
-
-        // Виконати запит до бази даних
-        const users = await UserModel.find(query)
-            .sort({ updatedAt: -1 })
-            .skip(skip)
-            .limit(limit);
-
-        const usersDto = users.map(user => new UserDto(user));
-
-        const followFromCount = await UserModel.countDocuments({ followTo: myUserId }); // кількість користувачів, які слідкують за мною
-
-        return {
-            followFromCount,
-            users: usersDto,
-        };
-    }
+        return new UserDto(user);
+    };
 
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
         const user = await UserModel.findById(id);
@@ -332,56 +295,7 @@ class UserService {
         await user.save();
 
         return new UserDto(user);
-    }
-
-    async changeLang(userId, lang) {
-        const user = await UserModel.findById(userId);
-        if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
-        }
-
-        user.lang = lang;
-        await user.save();
-
-        return new UserDto(user);
-    }
-
-    async deleteMyUser(id, email, password) {
-        const userToBeDeleted = await UserModel.findOne({ email });
-        if (!userToBeDeleted) {
-            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
-        }
-
-        if (userToBeDeleted._id.toString() !== id) {
-            throw ApiError.BadRequest('Помилка при вводі даних');
-        }
-
-        if (userToBeDeleted.password && userToBeDeleted.password.length > 0) {
-            const decryptedPassword = decryptData(password);
-            const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
-            if (!isPassEquals) {
-                throw ApiError.BadRequest('Невірний пароль');
-            }
-        }
-
-        const deletedUser = await UserModel.findByIdAndDelete(id);
-        if (!deletedUser) {
-            throw ApiError.BadRequest(`Не вдалось видалити користувача з id: "${id}"`);
-        }
-
-        await TokenModel.deleteOne({ user: deletedUser._id });
-
-        for (const wishId of deletedUser.wishList) {
-            await WishModel.findByIdAndDelete(wishId);
-        }
-
-        const deletedUserPath = await AwsService.deleteFile(`user-${deletedUser._id}`);
-        if (deletedUserPath.length !== 0) {
-            throw ApiError.BadRequest('Не вдалось видалити всі файли користувача');
-        }
-
-        return deletedUser._id;
-    }
+    };
 
     async addFriend(myId, friendId) {
         const myUser = await UserModel.findById(new ObjectId(myId));
@@ -408,7 +322,7 @@ class UserService {
         await friendUser.save();
 
         return new UserDto(myUser);
-    }
+    };
 
     async removeFriend(myId, friendId, whereRemove) {
         const myUser = await UserModel.findById(new ObjectId(myId));
@@ -458,7 +372,93 @@ class UserService {
         await friendUser.save();
 
         return new UserDto(myUser);
-    }
+    };
+
+    async deleteMyUser(id, email, password) {
+        const userToBeDeleted = await UserModel.findOne({ email });
+        if (!userToBeDeleted) {
+            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+        }
+
+        if (userToBeDeleted._id.toString() !== id) {
+            throw ApiError.BadRequest('Помилка при вводі даних');
+        }
+
+        if (userToBeDeleted.password && userToBeDeleted.password.length > 0) {
+            const decryptedPassword = decryptData(password);
+            const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
+            if (!isPassEquals) {
+                throw ApiError.BadRequest('Невірний пароль');
+            }
+        }
+
+        const deletedUser = await UserModel.findByIdAndDelete(id);
+        if (!deletedUser) {
+            throw ApiError.BadRequest(`Не вдалось видалити користувача з id: "${id}"`);
+        }
+
+        await TokenModel.deleteOne({ user: deletedUser._id });
+
+        for (const wishId of deletedUser.wishList) {
+            await WishModel.findByIdAndDelete(wishId);
+        }
+
+        const deletedUserPath = await AwsService.deleteFile(`user-${deletedUser._id}`);
+        if (deletedUserPath.length !== 0) {
+            throw ApiError.BadRequest('Не вдалось видалити всі файли користувача');
+        }
+
+        return deletedUser._id;
+    };
+
+    async getUsers(page, limit, myUserId, userType, search) {
+        let query = {};
+
+        // Додати фільтрацію за типом користувача (userType)
+        if (userType !== 'all') {
+            switch (userType) {
+                case 'friends':
+                    query = { friends: myUserId };
+                    break;
+                case 'followTo':
+                    query = { followFrom: myUserId }; // я за ними слідкую
+                    break;
+                case 'followFrom':
+                    query = { followTo: myUserId }; // вони за мною слідкують
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Додати пошук за ім'ям
+        if (search) {
+            query.$or = [
+                { firstName: { $regex: search, $options: 'i' } },
+                { lastName: { $regex: search, $options: 'i' } },
+            ];
+        }
+
+        // Виключити користувача, який робить запит
+        query._id = { $ne: myUserId };
+
+        const skip = (page - 1) * limit;
+
+        // Виконати запит до бази даних
+        const users = await UserModel.find(query)
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const usersDto = users.map(user => new UserDto(user));
+
+        const followFromCount = await UserModel.countDocuments({ followTo: myUserId }); // кількість користувачів, які слідкують за мною
+
+        return {
+            followFromCount,
+            users: usersDto,
+        };
+    };
 }
 
 module.exports = new UserService();
