@@ -51,7 +51,7 @@ class WishService {
 
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw new Error('Користувач який створює бажання не знайдений');
+            throw ApiError.BadRequest('Користувач який створює бажання не знайдений');
         }
 
         const unencryptedName = show === 'all' ? name : decryptData(name);
@@ -215,26 +215,26 @@ class WishService {
         };
     };
 
-    async doneWish(userId, wishId) {
+    async doneWish(userId, wishId, whoseWish) {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw new Error('Користувач не знайдений');
+            throw ApiError.BadRequest('Користувач не знайдений');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookedWish = await WishModel.findById(wishId);
         if (!bookedWish) {
-            throw new Error('Бажання не знайдено');
+            throw ApiError.BadRequest('Бажання не знайдено');
         }
 
         if (user._id.toString() !== bookedWish.userId.toString()) {
-            throw new Error('Ви не можете позначити чуже бажання виконанним');
+            throw ApiError.BadRequest('Ви не можете позначити чуже бажання виконанним');
         }
 
-        const executorUser = await UserModel.findById(bookedWish.booking.userId);
+        const executorUser = whoseWish === 'my' ? user : await UserModel.findById(bookedWish.booking.userId);
         if (!executorUser) {
-            throw new Error('Виконувача бажання не знайдено');
+            throw ApiError.BadRequest('Виконувача бажання не знайдено');
         }
 
         // Видаліть бронювання бажання
@@ -243,7 +243,7 @@ class WishService {
         bookedWish.executed = true;
 
         // Додати до виконанних бажань користувача ще одне виконанне бажання
-        executorUser.successfulWishes += 1;
+        whoseWish === 'someone' && (executorUser.successfulWishes += 1);
 
         // Збережіть зміни
         await bookedWish.save();
@@ -256,22 +256,22 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw new Error('Користувач не знайдений');
+            throw ApiError.BadRequest('Користувач не знайдений');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookedWish = await WishModel.findById(wishId);
         if (!bookedWish) {
-            throw new Error('Бажання не знайдено');
+            throw ApiError.BadRequest('Бажання не знайдено');
         }
 
         if (user._id.toString() !== bookedWish.userId.toString()) {
-            throw new Error('Ви не можете позначити чуже бажання не виконанним');
+            throw ApiError.BadRequest('Ви не можете позначити чуже бажання не виконанним');
         }
 
         const executorUser = await UserModel.findById(bookedWish.booking.userId);
         if (!executorUser) {
-            throw new Error('Виконувача бажання не знайдено');
+            throw ApiError.BadRequest('Виконувача бажання не знайдено');
         }
 
         // Видаліть бронювання бажання
@@ -291,13 +291,13 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw new Error('Користувач не знайдений');
+            throw ApiError.BadRequest('Користувач не знайдений');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookingWish = await WishModel.findById(wishId);
         if (!bookingWish) {
-            throw new Error('Бажання не знайдено');
+            throw ApiError.BadRequest('Бажання не знайдено');
         }
 
         // Забронювати бажання
@@ -317,17 +317,17 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw new Error('Користувач не знайдений');
+            throw ApiError.BadRequest('Користувач не знайдений');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookedWish = await WishModel.findById(wishId);
         if (!bookedWish) {
-            throw new Error('Бажання не знайдено');
+            throw ApiError.BadRequest('Бажання не знайдено');
         }
 
         if (user._id.toString() !== bookedWish.booking.userId.toString()) {
-            throw new Error('Ви не можете скасувати бронювання бажання яке не бронювали');
+            throw ApiError.BadRequest('Ви не можете скасувати бронювання бажання яке не бронювали');
         }
 
         // Видаліть бронювання бажання
@@ -343,13 +343,13 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw new Error('Користувач не знайдений');
+            throw ApiError.BadRequest('Користувач не знайдений');
         }
 
         // Знайдіть бажання за його ідентифікатором і видаліть його
         const deletedWish = await WishModel.findByIdAndDelete(wishId);
         if (!deletedWish) {
-            throw new Error('Бажання не знайдено');
+            throw ApiError.BadRequest('Бажання не знайдено');
         }
 
         // Видаліть всі файли з бажанням з бази Amazon S3
@@ -372,7 +372,7 @@ class WishService {
     async getWishList(myId, userId) {
         const user = await UserModel.findById(userId).populate('wishList');
         if (!user) {
-            throw new Error(`Користувача з id: "${userId}" не знайдено`);
+            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
         }
 
         if (myId === userId) {

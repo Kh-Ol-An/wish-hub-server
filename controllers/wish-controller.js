@@ -35,9 +35,9 @@ class WishController {
 
     async doneWish(req, res, next) {
         try {
-            const { userId, wishId } = req.body;
+            const { userId, wishId, whoseWish } = req.body;
 
-            const doneWishData = await WishService.doneWish(userId, wishId);
+            const doneWishData = await WishService.doneWish(userId, wishId, whoseWish);
 
             return res.json(doneWishData);
         } catch (error) {
