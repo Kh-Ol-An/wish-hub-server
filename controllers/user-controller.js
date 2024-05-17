@@ -105,9 +105,9 @@ class UserController {
 
     async forgotPassword(req, res, next) {
         try {
-            const { email } = req.body;
+            const { email, lang } = req.body;
 
-            const userEmail = await UserService.forgotPassword(email);
+            const userEmail = await UserService.forgotPassword(email, lang);
 
             return res.json(userEmail);
         } catch (error) {

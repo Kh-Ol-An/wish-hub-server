@@ -14,25 +14,31 @@ class MailService {
         });
     }
 
-    async sendActivationMail(to, name, link) {
-        const html = await fs.readFile('emails/activationMail.html', 'utf-8');
+    async sendActivationMail(lang, to, name, link) {
+        const html = await fs.readFile(`emails/activation/${lang}.html`, 'utf-8');
+
+        let subject = 'Account activation at';
+        lang === 'uk' && (subject = 'Активація облікового запису на');
 
         await this.transporter.sendMail({
             from: process.env.SMTP_USER,
             to,
-            subject: `Активація облікового запису на ${process.env.CLIENT_URL.replace('https://', '')}`,
+            subject: `${subject} ${process.env.CLIENT_URL.replace('https://', '')}`,
             text: '',
             html: html.replace('{name}', name).replace('{link}', link).replace('{handle-link}', link)
         });
     }
 
-    async sendPasswordResetMail(to, name, link) {
-        const html = await fs.readFile('emails/passwordResetMail.html', 'utf-8');
+    async sendPasswordResetMail(lang, to, name, link) {
+        const html = await fs.readFile(`emails/password-reset/${lang}.html`, 'utf-8');
+
+        let subject = 'Password reset at';
+        lang === 'uk' && (subject = 'Відновлення пароля на');
 
         await this.transporter.sendMail({
             from: process.env.SMTP_USER,
             to,
-            subject: `Відновлення пароля на ${process.env.CLIENT_URL.replace('https://', '')}`,
+            subject: `${subject} ${process.env.CLIENT_URL.replace('https://', '')}`,
             text: '',
             html: html.replace('{name}', name).replace('{link}', link).replace('{handle-link}', link)
         });

@@ -31,7 +31,12 @@ class UserService {
             activationLink,
             activationLinkExpires: Date.now() + LINK_WILL_EXPIRE_IN,
         });
-        await MailService.sendActivationMail(email, firstName, `${process.env.API_URL}/api/activate/${activationLink}`);
+        await MailService.sendActivationMail(
+            lang,
+            email,
+            firstName,
+            `${process.env.API_URL}/api/activate/${activationLink}`,
+        );
 
         const userDto = new UserDto(user);
         const tokens = TokenService.generateToken({ ...userDto });
@@ -203,7 +208,7 @@ class UserService {
         };
     };
 
-    async forgotPassword(email) {
+    async forgotPassword(email, lang) {
         const user = await UserModel.findOne({ email });
         if (!user) {
             throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
@@ -211,6 +216,7 @@ class UserService {
 
         const passwordResetLink = uuid.v4();
         await MailService.sendPasswordResetMail(
+            lang,
             email,
             user.firstName,
             `${process.env.CLIENT_URL}/change-forgotten-password/${passwordResetLink}`,
