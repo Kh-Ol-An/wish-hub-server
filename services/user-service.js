@@ -16,7 +16,7 @@ class UserService {
     async registration(firstName, email, password, lang) {
         const candidate = await UserModel.findOne({ email });
         if (candidate) {
-            throw ApiError.BadRequest(`Користувач з електронною адресою ${email} вже існує`);
+            throw ApiError.BadRequest(`SERVER.UserService.registration: User with email address ${email} already exists`);
         }
 
         const decryptedPassword = decryptData(password);
@@ -51,7 +51,7 @@ class UserService {
     async activate(activationLink) {
         const user = await UserModel.findOne({ activationLink });
         if (!user) {
-            throw ApiError.BadRequest('Невірне посилання для активації');
+            throw ApiError.BadRequest('SERVER.UserService.activate: Invalid activation link');
         }
 
         if (user.activationLinkExpires < Date.now()) {
@@ -69,7 +69,7 @@ class UserService {
     async generateActivationLink(userId) {
         const user = await UserModel.findOne(new ObjectId(userId));
         if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.generateActivationLink: User with id: “${userId}” not found`);
         }
 
         if (user.isActivated) return;
@@ -128,10 +128,13 @@ class UserService {
             };
         }
 
+        let noName = 'User';
+        lang === 'uk' && (noName = 'Користувач');
+
         const newUser = await UserModel.create({
             email,
             lang,
-            firstName: firstName.length > 0 ? firstName : 'Користувач',
+            firstName: firstName.length > 0 ? firstName : noName,
             lastName: lastName.length > 0 ? lastName : undefined,
             avatar: avatar.length > 0 ? avatar : undefined,
             isActivated: !!isActivated,
@@ -160,13 +163,13 @@ class UserService {
     async login(email, password, lang) {
         const user = await UserModel.findOne({ email });
         if (!user) {
-            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+            throw ApiError.BadRequest('SERVER.UserService.login: The user with the following email address was not found');
         }
 
         const decryptedPassword = decryptData(password);
         const isPassEquals = await bcrypt.compare(decryptedPassword, user.password);
         if (!isPassEquals) {
-            throw ApiError.BadRequest('Невірний пароль');
+            throw ApiError.BadRequest('SERVER.UserService.login: Incorrect password');
         }
 
         user.lang = lang;
@@ -211,7 +214,7 @@ class UserService {
     async forgotPassword(email, lang) {
         const user = await UserModel.findOne({ email });
         if (!user) {
-            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+            throw ApiError.BadRequest('SERVER.UserService.forgotPassword: The user with the following email address was not found');
         }
 
         const passwordResetLink = uuid.v4();
@@ -233,11 +236,11 @@ class UserService {
     async changeForgottenPassword(passwordResetLink, newPassword) {
         const user = await UserModel.findOne({ passwordResetLink });
         if (!user) {
-            throw ApiError.BadRequest('Невірне посилання для зміни паролю');
+            throw ApiError.BadRequest('SERVER.UserService.changeForgottenPassword: Incorrect link to change password');
         }
 
         if (user.passwordResetLinkExpires < Date.now()) {
-            throw ApiError.BadRequest('Посилання для зміни паролю вже не дійсне');
+            throw ApiError.BadRequest('SERVER.UserService.changeForgottenPassword: The link to change your password is no longer valid');
         }
 
         const decryptedNewPassword = decryptData(newPassword);
@@ -255,14 +258,14 @@ class UserService {
     async changePassword(userId, oldPassword, newPassword, refreshToken) {
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.changePassword: User with id: “${userId}” not found`);
         }
 
         const decryptedOldPassword = decryptData(oldPassword);
         if (user.password && user.password.length > 0) {
             const isPassEquals = await bcrypt.compare(decryptedOldPassword, user.password);
             if (!isPassEquals) {
-                throw ApiError.BadRequest('Ви ввели невірний старий пароль');
+                throw ApiError.BadRequest('SERVER.UserService.changePassword: Incorrect old password');
             }
         }
 
@@ -279,7 +282,7 @@ class UserService {
     async changeLang(userId, lang) {
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.changeLang: User with id: “${userId}” not found`);
         }
 
         user.lang = lang;
@@ -291,7 +294,7 @@ class UserService {
     async updateMyUser(id, firstName, lastName, birthday, avatar) {
         const user = await UserModel.findById(id);
         if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${id}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.updateMyUser: User with id: “${id}” not found`);
         }
 
         user.firstName = firstName;
@@ -306,12 +309,12 @@ class UserService {
     async addFriend(myId, friendId) {
         const myUser = await UserModel.findById(new ObjectId(myId));
         if (!myUser) {
-            throw ApiError.BadRequest(`Користувача з id: "${myId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with id: “${myId}” not found`);
         }
 
         const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
-            throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with id: “${friendId}” not found`);
         }
 
         if (myUser.followFrom.includes(friendUser.id) && friendUser.followTo.includes(myUser.id)) {
@@ -333,12 +336,12 @@ class UserService {
     async removeFriend(myId, friendId, whereRemove) {
         const myUser = await UserModel.findById(new ObjectId(myId));
         if (!myUser) {
-            throw ApiError.BadRequest(`Користувача з id: "${myId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with id: “${myId}” not found`);
         }
 
         const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
-            throw ApiError.BadRequest(`Користувача з id: "${friendId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with id: “${friendId}” not found`);
         }
 
         if (whereRemove === 'friends') {
@@ -383,24 +386,24 @@ class UserService {
     async deleteMyUser(id, email, password) {
         const userToBeDeleted = await UserModel.findOne({ email });
         if (!userToBeDeleted) {
-            throw ApiError.BadRequest('Користувач з такою електронною адресою не знайдений');
+            throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: The user with the following email address was not found');
         }
 
         if (userToBeDeleted._id.toString() !== id) {
-            throw ApiError.BadRequest('Помилка при вводі даних');
+            throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Data entry error');
         }
 
         if (userToBeDeleted.password && userToBeDeleted.password.length > 0) {
             const decryptedPassword = decryptData(password);
             const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
             if (!isPassEquals) {
-                throw ApiError.BadRequest('Невірний пароль');
+                throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Incorrect password');
             }
         }
 
         const deletedUser = await UserModel.findByIdAndDelete(id);
         if (!deletedUser) {
-            throw ApiError.BadRequest(`Не вдалось видалити користувача з id: "${id}"`);
+            throw ApiError.BadRequest(`SERVER.UserService.deleteMyUser: Could not delete user with ID: “${id}”`);
         }
 
         await TokenModel.deleteOne({ user: deletedUser._id });
@@ -411,7 +414,7 @@ class UserService {
 
         const deletedUserPath = await AwsService.deleteFile(`user-${deletedUser._id}`);
         if (deletedUserPath.length !== 0) {
-            throw ApiError.BadRequest('Не вдалось видалити всі файли користувача');
+            throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Could not delete all user files');
         }
 
         return deletedUser._id;

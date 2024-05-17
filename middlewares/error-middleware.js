@@ -7,5 +7,5 @@ module.exports = function (err, req, res, next) {
         return res.status(err.status).json({ message: err.message, errors: err.errors });
     }
 
-    return res.status(500).json({ message: 'Непередбачена помилка. Спробуйте ще раз. Або зв\'яжіться з нами: wish-hub@ukr.net' });
+    return res.status(500).json({ message: 'Unexpected error. Please try again. Or contact us: wish-hub@ukr.net' });
 };

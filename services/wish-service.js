@@ -22,24 +22,24 @@ class WishService {
     static wishValidator(name, imageLength) {
         const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s-!"№#$%&()*.,;=?@_]*$/;
         if (!nameRegex.test(name)) {
-            throw ApiError.BadRequest(`Назва бажання "${name}" містить недопустимі символи. Будь ласка, використовуй лише літери латинського або кириличного алфавітів, цифри, пробіли та наступні символи: -!"№#$%&()*.,;=?@_`);
+            throw ApiError.BadRequest(`SERVER.WishService.WishService.wishValidator: The wish name “${name}” contains invalid characters. Please use only Latin or Cyrillic letters, numbers, spaces, and the following characters: -!"№#$%&()*.,;=?@_`);
         }
 
         if (imageLength > MAX_NUMBER_OF_FILES) {
-            throw ApiError.BadRequest(`Ви намагаєтесь завантажити ${imageLength} файлів. Максимальна кількість файлів для завантаження ${MAX_NUMBER_OF_FILES}`);
+            throw ApiError.BadRequest(`SERVER.WishService.WishService.wishValidator: You are trying to upload ${imageLength} files. Maximum number of files to upload ${MAX_NUMBER_OF_FILES}`);
         }
     };
 
     static fileValidator(file) {
         if (file.size > 1024 * 1024 * MAX_FILE_SIZE_IN_MB) {
-            throw ApiError.BadRequest(`Один з файлів які ви завантажуєте розміром ${(file.size / 1024 / 1024).toFixed(2)} МБ. Максимальний розмір файлу ${MAX_FILE_SIZE_IN_MB} МБ`);
+            throw ApiError.BadRequest(`SERVER.WishService.WishService.fileValidator: One of the files you upload is ${(file.size / 1024 / 1024).toFixed(2)} MB. Maximum file size ${MAX_FILE_SIZE_IN_MB} MB`);
         }
 
         if (!WishService.isAllowedExtension(file.originalname)) {
             throw ApiError.BadRequest(
-                `Один або декілька файлів які ви завантажуєте з розширенням "${
+                `SERVER.WishService.WishService.fileValidator: One or more files you upload with the "${
                     mime.extension(file.mimetype)
-                }" заборонений до завантаження. Дозволені файли з наступними розширеннями: "${
+                }" extension are not allowed for upload. Files with the following extensions are allowed: "${
                     WishService.ALLOWED_EXTENSIONS.join(', ')
                 }"`
             );
@@ -51,7 +51,7 @@ class WishService {
 
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest('Користувач який створює бажання не знайдений');
+            throw ApiError.BadRequest('SERVER.WishService.createWish: The user who creates the wish is not found');
         }
 
         const unencryptedName = show === 'all' ? name : decryptData(name);
@@ -59,7 +59,7 @@ class WishService {
 
         const potentialWish = await WishModel.findOne({ user: userId, name: unencryptedName });
         if (potentialWish) {
-            throw ApiError.BadRequest(`В тебе вже є бажання з назвою "${unencryptedName}".`);
+            throw ApiError.BadRequest(`SERVER.WishService.createWish: You already have a wish named  "${unencryptedName}".`);
         }
 
         const wish = await WishModel.create({
@@ -102,7 +102,7 @@ class WishService {
 
         const wish = await WishModel.findById(new ObjectId(id));
         if (!wish) {
-            throw ApiError.BadRequest(`Бажання з id: "${id}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.WishService.updateWish: Requests with id: “${id}” not found`);
         }
 
         const unencryptedName = show === 'all' ? name : decryptData(name);
@@ -124,7 +124,7 @@ class WishService {
         if (potentialWish) {
             const potentialWishId = new ObjectId(potentialWish._id).toString();
             if (potentialWishId !== id) {
-                throw ApiError.BadRequest(`В тебе вже є бажання з назвою "${unencryptedName}".`);
+                throw ApiError.BadRequest(`SERVER.WishService.updateWish: You already have a wish named  "${unencryptedName}".`);
             }
         }
 
@@ -199,12 +199,12 @@ class WishService {
     async getWish(wishId) {
         const wish = await WishModel.findById(wishId);
         if (!wish) {
-            throw ApiError.BadRequest(`Бажання з id: "${wishId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.WishService.getWish: Wish with id: “${wishId}” not found`);
         }
 
         const user = await UserModel.findById(wish.userId);
         if (!user) {
-            throw ApiError.BadRequest(`Користувача створившого бажання з id: "${wishId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.WishService.getWish: The user who created the wish with id: “${wishId}” was not found`);
         }
 
         return {
@@ -219,22 +219,22 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest('Користувач не знайдений');
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: User not found');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookedWish = await WishModel.findById(wishId);
         if (!bookedWish) {
-            throw ApiError.BadRequest('Бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: Wish not found');
         }
 
         if (user._id.toString() !== bookedWish.userId.toString()) {
-            throw ApiError.BadRequest('Ви не можете позначити чуже бажання виконанним');
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: You cannot mark someone else\'s wish as fulfilled');
         }
 
         const executorUser = whoseWish === 'my' ? user : await UserModel.findById(bookedWish.booking.userId);
         if (!executorUser) {
-            throw ApiError.BadRequest('Виконувача бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: The executor of the wish was not found');
         }
 
         // Видаліть бронювання бажання
@@ -256,22 +256,22 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest('Користувач не знайдений');
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: User not found');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookedWish = await WishModel.findById(wishId);
         if (!bookedWish) {
-            throw ApiError.BadRequest('Бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: Wish not found');
         }
 
         if (user._id.toString() !== bookedWish.userId.toString()) {
-            throw ApiError.BadRequest('Ви не можете позначити чуже бажання не виконанним');
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: You cannot mark someone else\'s wish as unfulfilled');
         }
 
         const executorUser = await UserModel.findById(bookedWish.booking.userId);
         if (!executorUser) {
-            throw ApiError.BadRequest('Виконувача бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: The executor of the wish was not found');
         }
 
         // Видаліть бронювання бажання
@@ -291,13 +291,13 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest('Користувач не знайдений');
+            throw ApiError.BadRequest('SERVER.WishService.bookWish: User not found');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookingWish = await WishModel.findById(wishId);
         if (!bookingWish) {
-            throw ApiError.BadRequest('Бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.bookWish: Wish not found');
         }
 
         // Забронювати бажання
@@ -317,17 +317,17 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest('Користувач не знайдений');
+            throw ApiError.BadRequest('SERVER.WishService.cancelBookWish: User not found');
         }
 
         // Знайдіть бажання за його ідентифікатором
         const bookedWish = await WishModel.findById(wishId);
         if (!bookedWish) {
-            throw ApiError.BadRequest('Бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.cancelBookWish: Wish not found');
         }
 
         if (user._id.toString() !== bookedWish.booking.userId.toString()) {
-            throw ApiError.BadRequest('Ви не можете скасувати бронювання бажання яке не бронювали');
+            throw ApiError.BadRequest('SERVER.WishService.cancelBookWish: You cannot cancel a wish that you have not booked');
         }
 
         // Видаліть бронювання бажання
@@ -343,13 +343,13 @@ class WishService {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest('Користувач не знайдений');
+            throw ApiError.BadRequest('SERVER.WishService.deleteWish: User not found');
         }
 
         // Знайдіть бажання за його ідентифікатором і видаліть його
         const deletedWish = await WishModel.findByIdAndDelete(wishId);
         if (!deletedWish) {
-            throw ApiError.BadRequest('Бажання не знайдено');
+            throw ApiError.BadRequest('SERVER.WishService.deleteWish: Wish not found');
         }
 
         // Видаліть всі файли з бажанням з бази Amazon S3
@@ -372,7 +372,7 @@ class WishService {
     async getWishList(myId, userId) {
         const user = await UserModel.findById(userId).populate('wishList');
         if (!user) {
-            throw ApiError.BadRequest(`Користувача з id: "${userId}" не знайдено`);
+            throw ApiError.BadRequest(`SERVER.WishService.getWishList: User with id: “${userId}” not found`);
         }
 
         if (myId === userId) {

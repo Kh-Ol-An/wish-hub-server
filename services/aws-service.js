@@ -21,7 +21,7 @@ class AwsService {
             const data = await s3.upload(params).promise();
             return data.Location;
         } catch (error) {
-            throw ApiError.BadRequest(`Помилка при завантаженні файлу на Amazon S3: ${error}`);
+            throw ApiError.BadRequest(`SERVER.AwsService.uploadFile: Error uploading a file to Amazon S3: ${error}`);
         }
     }
 
@@ -51,7 +51,7 @@ class AwsService {
             const data = await s3.upload(params).promise();
             return data.Location;
         } catch (error) {
-            throw ApiError.BadRequest(`Помилка при оновлені файлу на Amazon S3: ${error}`);
+            throw ApiError.BadRequest(`SERVER.AwsService.updateFile: Error updating a file on Amazon S3: ${error}`);
         }
     }
 
@@ -71,7 +71,7 @@ class AwsService {
 
             return '';
         } catch (error) {
-            throw ApiError.BadRequest(`Помилка при видаленні файлу на Amazon S3: ${error}`);
+            throw ApiError.BadRequest(`SERVER.AwsService.deleteFile: Error deleting a file on Amazon S3: ${error}`);
         }
     }
 }
