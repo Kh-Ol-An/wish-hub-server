@@ -6,6 +6,11 @@ const ImageSchema = new Schema({
     delete: { type: Boolean, default: false },
 });
 
+const AddressSchema = new Schema({
+    id: { type: String, required: true },
+    value: { type: String, required: true }
+}, { _id: false });
+
 const WishSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     material: { type: Boolean, required: true },
@@ -18,7 +23,7 @@ const WishSchema = new Schema({
         }
     },
     currency:  { type: String, enum: ['UAH', 'USD', 'EUR'] },
-    address:  { type: String },
+    addresses:  [AddressSchema],
     description: { type: String },
     executed: { type: Boolean, default: false },
     images: [ImageSchema],

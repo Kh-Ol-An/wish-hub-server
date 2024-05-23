@@ -46,7 +46,7 @@ class WishDto {
     name;
     price;
     currency;
-    address;
+    addresses;
     description;
     executed;
     images;
@@ -61,7 +61,7 @@ class WishDto {
         this.name = model.name;
         this.price = dataDto(model.show, model.price);
         this.currency = dataDto(model.show, model.currency);
-        this.address = model.address;
+        this.addresses = model.addresses;
         this.description = model.description;
         this.executed = model.executed;
         this.images = model.images.map(image => new ImageDto(image));

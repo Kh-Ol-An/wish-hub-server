@@ -47,7 +47,7 @@ class WishService {
     };
 
     async createWish(body, files) {
-        const { userId, material, show, name, price, currency, address, description } = body;
+        const { userId, material, show, name, price, currency, description } = body;
 
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -69,9 +69,15 @@ class WishService {
             name,
             price: show === 'all' ? price : decryptData(price),
             currency: show === 'all' ? currency : decryptData(currency),
-            address,
             description,
         });
+
+        for (const key in body) {
+            if (key.includes('address')) {
+                const address = JSON.parse(body[key]);
+                wish.addresses.push(address);
+            }
+        }
 
         const images = [];
         for (const key in files) {
@@ -98,7 +104,7 @@ class WishService {
     };
 
     async updateWish(body, files) {
-        const { id, userId, material, show, name, price, currency, address, description } = body;
+        const { id, userId, material, show, name, price, currency, description } = body;
 
         const wish = await WishModel.findById(new ObjectId(id));
         if (!wish) {
@@ -125,6 +131,14 @@ class WishService {
             const potentialWishId = new ObjectId(potentialWish._id).toString();
             if (potentialWishId !== id) {
                 throw ApiError.BadRequest(`SERVER.WishService.updateWish: You already have a wish named  "${unencryptedName}".`);
+            }
+        }
+
+        const addresses = [];
+        for (const key in body) {
+            if (key.includes('address')) {
+                const address = JSON.parse(body[key]);
+                addresses.push(address);
             }
         }
 
@@ -187,7 +201,7 @@ class WishService {
         wish.name = name;
         wish.price = show === 'all' ? price : decryptData(price);
         wish.currency = show === 'all' ? currency : decryptData(currency);
-        wish.address = address;
+        wish.addresses = addresses;
         wish.description = description;
         wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));
 
