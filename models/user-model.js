@@ -5,6 +5,7 @@ const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String },
     lang: { type: String, default: 'en', enum: ['en', 'uk'] },
+    firstLoaded: { type: Boolean, default: false },
     firstName: { type: String, required: true },
     lastName: { type: String },
     avatar: { type: String },

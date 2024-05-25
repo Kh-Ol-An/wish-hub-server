@@ -386,7 +386,7 @@ class WishService {
     async getWishList(myId, userId) {
         const user = await UserModel.findById(userId).populate('wishList');
         if (!user) {
-            throw ApiError.BadRequest(`SERVER.WishService.getWishList: User with id: “${userId}” not found`);
+            throw ApiError.BadRequest(`SERVER.WishService.getWishList: User with ID: “${userId}” not found`);
         }
 
         if (myId === userId) {

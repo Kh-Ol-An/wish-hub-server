@@ -154,25 +154,36 @@ class UserController {
         }
     };
 
+    async changeFirstLoaded(req, res, next) {
+        try {
+            const { userId } = req.body;
+
+            const user = await UserService.changeFirstLoaded(userId);
+
+            return res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     async updateMyUser(req, res, next) {
         try {
-            const { id, firstName, lastName, birthday, avatar } = req.body;
+            const { userId, firstName, lastName, birthday, avatar } = req.body;
             const file = req.file;
 
             let avatarPath = avatar;
             if (avatar === 'delete') {
-                avatarPath = await AwsService.deleteFile(`user-${id}/avatar`);
+                avatarPath = await AwsService.deleteFile(`user-${userId}/avatar`);
             }
             if (!!file?.buffer) {
                 avatarPath = await AwsService.updateFile(
                     file,
-                    `user-${id}/avatar`,
-                    `user-${id}/avatar/${generateFileId(file?.buffer)}.${mime.extension(file?.mimetype)}`,
-                    id,
+                    `user-${userId}/avatar`,
+                    `user-${userId}/avatar/${generateFileId(file?.buffer)}.${mime.extension(file?.mimetype)}`,
                 );
             }
 
-            const user = await UserService.updateMyUser(id, firstName, lastName, birthday, avatarPath);
+            const user = await UserService.updateMyUser(userId, firstName, lastName, birthday, avatarPath);
 
             return res.json(user);
         } catch (error) {
@@ -206,9 +217,9 @@ class UserController {
 
     async deleteMyUser(req, res, next) {
         try {
-            const { id, email, password } = req.body;
+            const { userId, email, password } = req.body;
 
-            const deletedUserId = await UserService.deleteMyUser(id, email, password);
+            const deletedUserId = await UserService.deleteMyUser(userId, email, password);
 
             return res.json(deletedUserId);
         } catch (error) {

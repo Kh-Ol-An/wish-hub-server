@@ -25,7 +25,7 @@ class AwsService {
         }
     }
 
-    async updateFile(file, prefixPath, paramsKey, userId) {
+    async updateFile(file, prefixPath, paramsKey) {
         try {
             const existingFiles = await s3.listObjectsV2({
                 Bucket: process.env.AWS_SDK_BUCKET_NAME,

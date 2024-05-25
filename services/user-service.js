@@ -69,7 +69,7 @@ class UserService {
     async generateActivationLink(userId) {
         const user = await UserModel.findOne(new ObjectId(userId));
         if (!user) {
-            throw ApiError.BadRequest(`SERVER.UserService.generateActivationLink: User with id: “${userId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.generateActivationLink: User with ID: “${userId}” not found`);
         }
 
         if (user.isActivated) return;
@@ -258,7 +258,7 @@ class UserService {
     async changePassword(userId, oldPassword, newPassword, refreshToken) {
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest(`SERVER.UserService.changePassword: User with id: “${userId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.changePassword: User with ID: “${userId}” not found`);
         }
 
         const decryptedOldPassword = decryptData(oldPassword);
@@ -282,7 +282,7 @@ class UserService {
     async changeLang(userId, lang) {
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest(`SERVER.UserService.changeLang: User with id: “${userId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.changeLang: User with ID: “${userId}” not found`);
         }
 
         user.lang = lang;
@@ -291,10 +291,22 @@ class UserService {
         return new UserDto(user);
     };
 
-    async updateMyUser(id, firstName, lastName, birthday, avatar) {
-        const user = await UserModel.findById(id);
+    async changeFirstLoaded(userId) {
+        const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest(`SERVER.UserService.updateMyUser: User with id: “${id}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.changeLang: User with ID: “${userId}” not found`);
+        }
+
+        user.firstLoaded = true;
+        await user.save();
+
+        return new UserDto(user);
+    };
+
+    async updateMyUser(userId, firstName, lastName, birthday, avatar) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`SERVER.UserService.updateMyUser: User with ID: “${userId}” not found`);
         }
 
         user.firstName = firstName;
@@ -309,12 +321,12 @@ class UserService {
     async addFriend(myId, friendId) {
         const myUser = await UserModel.findById(new ObjectId(myId));
         if (!myUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with id: “${myId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with ID: “${myId}” not found`);
         }
 
         const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with id: “${friendId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with ID: “${friendId}” not found`);
         }
 
         if (myUser.followFrom.includes(friendUser.id) && friendUser.followTo.includes(myUser.id)) {
@@ -336,12 +348,12 @@ class UserService {
     async removeFriend(myId, friendId, whereRemove) {
         const myUser = await UserModel.findById(new ObjectId(myId));
         if (!myUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with id: “${myId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with ID: “${myId}” not found`);
         }
 
         const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with id: “${friendId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with ID: “${friendId}” not found`);
         }
 
         if (whereRemove === 'friends') {
@@ -383,13 +395,13 @@ class UserService {
         return new UserDto(myUser);
     };
 
-    async deleteMyUser(id, email, password) {
+    async deleteMyUser(userId, email, password) {
         const userToBeDeleted = await UserModel.findOne({ email });
         if (!userToBeDeleted) {
             throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: The user with the following email address was not found');
         }
 
-        if (userToBeDeleted._id.toString() !== id) {
+        if (userToBeDeleted._id.toString() !== userId) {
             throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Data entry error');
         }
 
@@ -401,9 +413,9 @@ class UserService {
             }
         }
 
-        const deletedUser = await UserModel.findByIdAndDelete(id);
+        const deletedUser = await UserModel.findByIdAndDelete(userId);
         if (!deletedUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.deleteMyUser: Could not delete user with ID: “${id}”`);
+            throw ApiError.BadRequest(`SERVER.UserService.deleteMyUser: Could not delete user with ID: “${userId}”`);
         }
 
         await TokenModel.deleteOne({ user: deletedUser._id });
