@@ -291,10 +291,22 @@ class UserService {
         return new UserDto(user);
     };
 
+    async changeShowedInfo(userId) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`SERVER.UserService.changeShowedInfo: User with ID: “${userId}” not found`);
+        }
+
+        user.showedInfo = true;
+        await user.save();
+
+        return new UserDto(user);
+    };
+
     async changeFirstLoaded(userId) {
         const user = await UserModel.findById(userId);
         if (!user) {
-            throw ApiError.BadRequest(`SERVER.UserService.changeLang: User with ID: “${userId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.changeFirstLoaded: User with ID: “${userId}” not found`);
         }
 
         user.firstLoaded = true;

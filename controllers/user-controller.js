@@ -154,6 +154,18 @@ class UserController {
         }
     };
 
+    async changeShowedInfo(req, res, next) {
+        try {
+            const { userId } = req.body;
+
+            const user = await UserService.changeShowedInfo(userId);
+
+            return res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     async changeFirstLoaded(req, res, next) {
         try {
             const { userId } = req.body;

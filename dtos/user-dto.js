@@ -3,6 +3,7 @@ class UserDto {
     email;
     hasPassword;
     lang;
+    showedInfo;
     firstLoaded;
     firstName;
     lastName;
@@ -23,6 +24,7 @@ class UserDto {
         this.email = model.email;
         this.hasPassword = !!(model.password && model.password.length > 0);
         this.lang = model.lang;
+        this.showedInfo = model.showedInfo;
         this.firstLoaded = model.firstLoaded;
         this.firstName = model.firstName;
         this.lastName = model.lastName;
