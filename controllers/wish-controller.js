@@ -3,9 +3,9 @@ const WishService = require('../services/wish-service');
 class WishController {
     async createWish(req, res, next) {
         try {
-            const wish = await WishService.createWish(req.body, req.files, next);
+            const wishData = await WishService.createWish(req.body, req.files, next);
 
-            return res.json(wish);
+            return res.json(wishData);
         } catch (error) {
             next(error);
         }

@@ -2,6 +2,7 @@ const { ObjectId } = require('mongoose').Types;
 const mime = require('mime-types');
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
+const quotes = require('../data/quotes.json');
 const WishDto = require('../dtos/wish-dto');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
@@ -10,6 +11,7 @@ const getImageId = require('../utils/get-image-id');
 const generateFileId = require('../utils/generate-file-id');
 const { MAX_FILE_SIZE_IN_MB, MAX_NUMBER_OF_FILES } = require('../utils/variables');
 const { encryptData, decryptData } = require('../utils/encryption-data');
+const { getRandomInt } = require('../utils/get-random-int');
 
 class WishService {
     static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
@@ -98,9 +100,18 @@ class WishService {
         await wish.save();
 
         user.wishList.push(wish.id);
+
+        let quote = quotes[user.quoteNumber];
+        const countQuotes = quotes.length;
+        if (user.quoteNumber >= countQuotes) {
+            quote = quotes[getRandomInt(0, countQuotes)];
+        } else {
+            user.quoteNumber++;
+        }
+
         await user.save();
 
-        return new WishDto(wish);
+        return { wish: new WishDto(wish), quote };
     };
 
     async updateWish(body, files) {
