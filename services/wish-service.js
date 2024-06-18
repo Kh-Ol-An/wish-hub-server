@@ -111,7 +111,7 @@ class WishService {
 
         await user.save();
 
-        return { wish: new WishDto(wish), quote };
+        return { wish: new WishDto(wish), quote: quote[user.lang] };
     };
 
     async updateWish(body, files) {

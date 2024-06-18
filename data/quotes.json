@@ -1,30 +1,62 @@
 [
   {
-    "text": "Коли ти чогось хочеш, весь Всесвіт буде сприяти тому, щоб твоє бажання здійснилося.",
-    "author": "Пауло Коельо"
+    "en": {
+      "text": "When you want something, all the universe conspires in helping you to achieve it.",
+      "author": "Paulo Coelho"
+    },
+    "uk": {
+      "text": "Коли ти чогось хочеш, весь Всесвіт буде сприяти тому, щоб твоє бажання здійснилося.",
+      "author": "Пауло Коельйо"
+    }
   },
   {
-    "text": "Велика помилка – це не збільшити свої бажання, а навпаки, зменшити їх.",
-    "author": "Генрі Дейвід Торо"
+    "en": {
+      "text": "The great fault is not to increase your desires but to reduce them.",
+      "author": "Henry David Thoreau"
+    },
+    "uk": {
+      "text": "Велика помилка – це не збільшити свої бажання, а навпаки, зменшити їх.",
+      "author": "Генрі Дейвід Торо"
+    }
   },
   {
-    "text": "Людина живе лише завдяки своїм бажанням.",
-    "author": "Віктор Гюго"
+    "en": {
+      "text": "A person lives only by their desires.",
+      "author": "Victor Hugo"
+    },
+    "uk": {
+      "text": "Людина живе лише завдяки своїм бажанням.",
+      "author": "Віктор Гюго"
+    }
   },
   {
-    "text": "Ніколи не пізно ставити нові цілі й мріяти про щось більше.",
-    "author": "Автор невідомий"
+    "en": {
+      "text": "It's never too late to set new goals and dream bigger.",
+      "author": "author"
+    },
+    "uk": {
+      "text": "Ніколи не пізно ставити нові цілі й мріяти про щось більше.",
+      "author": "Автор невідомий"
+    }
   },
   {
-    "text": "Чи ти думаєш, що зможеш, чи думаєш, що не зможеш – у будь-якому разі ти правий.",
-    "author": "Генрі Форд"
+    "en": {
+      "text": "Whether you think you can, or you think you can't – you're right.",
+      "author": "Henry Ford"
+    },
+    "uk": {
+      "text": "Чи ти думаєш, що зможеш, чи думаєш, що не зможеш – у будь-якому разі ти правий.",
+      "author": "Генрі Форд"
+    }
   },
   {
-    "text": "Майбутнє належить тим, хто вірить у красу своїх мрій.",
-    "author": "Елеонор Рузвельт"
-  },
-  {
-    "text": "text",
-    "author": "author"
+    "en": {
+      "text": "The future belongs to those who believe in the beauty of their dreams.",
+      "author": "Eleanor Roosevelt"
+    },
+    "uk": {
+      "text": "Майбутнє належить тим, хто вірить у красу своїх мрій.",
+      "author": "Елеонор Рузвельт"
+    }
   }
 ]
