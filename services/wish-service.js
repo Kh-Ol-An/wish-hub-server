@@ -341,6 +341,7 @@ class WishService {
         }
 
         // Збережіть зміни
+        await user.save();
         await bookingWish.save();
 
         return { wish: new WishDto(bookingWish), quote: quote[user.lang] };

@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "en": {
       "text": "When you want something, all the universe conspires in helping you to achieve it.",
       "author": "Paulo Coelho"
@@ -10,6 +11,7 @@
     }
   },
   {
+    "id": 2,
     "en": {
       "text": "The great fault is not to increase your desires but to reduce them.",
       "author": "Henry David Thoreau"
@@ -20,6 +22,7 @@
     }
   },
   {
+    "id": 3,
     "en": {
       "text": "A person lives only by their desires.",
       "author": "Victor Hugo"
@@ -30,6 +33,7 @@
     }
   },
   {
+    "id": 4,
     "en": {
       "text": "It's never too late to set new goals and dream bigger.",
       "author": "author"
@@ -40,6 +44,7 @@
     }
   },
   {
+    "id": 5,
     "en": {
       "text": "Whether you think you can, or you think you can't – you're right.",
       "author": "Henry Ford"
@@ -50,6 +55,7 @@
     }
   },
   {
+    "id": 6,
     "en": {
       "text": "The future belongs to those who believe in the beauty of their dreams.",
       "author": "Eleanor Roosevelt"
@@ -57,6 +63,61 @@
     "uk": {
       "text": "Майбутнє належить тим, хто вірить у красу своїх мрій.",
       "author": "Елеонор Рузвельт"
+    }
+  },
+  {
+    "id": 7,
+    "en": {
+      "text": "Desire is the beginning of all great achievements.",
+      "author": "Aristotle"
+    },
+    "uk": {
+      "text": "Бажання є початком усіх великих досягнень.",
+      "author": "Арістотель"
+    }
+  },
+  {
+    "id": 8,
+    "en": {
+      "text": "A strong desire is the key to success.",
+      "author": "Leonardo da Vinci"
+    },
+    "uk": {
+      "text": "Сильне бажання – це ключ до успіху.",
+      "author": "Леонардо да Вінчі"
+    }
+  },
+  {
+    "id": 9,
+    "en": {
+      "text": "The desire to change the world begins with the desire to change oneself.",
+      "author": "Mahatma Gandhi"
+    },
+    "uk": {
+      "text": "Бажання змінити світ починається з бажання змінити себе.",
+      "author": "Махатма Ґанді"
+    }
+  },
+  {
+    "id": 10,
+    "en": {
+      "text": "Twenty years from now, you will be more disappointed with what you didn't do than with what you did.",
+      "author": "Mark Twain"
+    },
+    "uk": {
+      "text": "Через двадцять років ви будете більше розчаровані тим, чого не зробили, ніж тим, що зробили.",
+      "author": "Марк Твен"
+    }
+  },
+  {
+    "id": 11,
+    "en": {
+      "text": "You don't have to be great to start, but you have to start to be great.",
+      "author": "Zig Ziglar"
+    },
+    "uk": {
+      "text": "Ви не повинні бути великими, щоб почати, але ви повинні почати, щоб бути великими",
+      "author": "Зіг Зіглар"
     }
   }
 ]
