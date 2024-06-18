@@ -332,10 +332,18 @@ class WishService {
             end,
         };
 
+        let quote = quotes[user.quoteNumber];
+        const countQuotes = quotes.length;
+        if (user.quoteNumber >= countQuotes) {
+            quote = quotes[getRandomInt(0, countQuotes)];
+        } else {
+            user.quoteNumber++;
+        }
+
         // Збережіть зміни
         await bookingWish.save();
 
-        return new WishDto(bookingWish);
+        return { wish: new WishDto(bookingWish), quote: quote[user.lang] };
     };
 
     async cancelBookWish(userId, wishId) {

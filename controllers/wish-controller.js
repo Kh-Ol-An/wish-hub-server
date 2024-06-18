@@ -61,9 +61,9 @@ class WishController {
         try {
             const { userId, wishId, end } = req.body;
 
-            const bookedWish = await WishService.bookWish(userId, wishId, end);
+            const bookedWishData = await WishService.bookWish(userId, wishId, end);
 
-            return res.json(bookedWish);
+            return res.json(bookedWishData);
         } catch (error) {
             next(error);
         }
