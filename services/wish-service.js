@@ -111,7 +111,7 @@ class WishService {
 
         await user.save();
 
-        return { wish: new WishDto(wish), quote: quote[user.lang] };
+        return { wish: new WishDto(wish), quote };
     };
 
     async updateWish(body, files) {
@@ -344,7 +344,7 @@ class WishService {
         await user.save();
         await bookingWish.save();
 
-        return { wish: new WishDto(bookingWish), quote: quote[user.lang] };
+        return { wish: new WishDto(bookingWish), quote };
     };
 
     async cancelBookWish(userId, wishId) {
