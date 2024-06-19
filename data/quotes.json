@@ -36,7 +36,7 @@
     "id": 4,
     "en": {
       "text": "It's never too late to set new goals and dream bigger.",
-      "author": "author"
+      "author": "Author unknown"
     },
     "uk": {
       "text": "Ніколи не пізно ставити нові цілі й мріяти про щось більше.",
@@ -68,12 +68,12 @@
   {
     "id": 7,
     "en": {
-      "text": "Desire is the beginning of all great achievements.",
-      "author": "Aristotle"
+      "text": "Freedom is the ability to say yes to your dreams. Dignity is the ability to say no to your fears.",
+      "author": "Sviatoslav Vakarchuk"
     },
     "uk": {
-      "text": "Бажання є початком усіх великих досягнень.",
-      "author": "Арістотель"
+      "text": "Свобода — це вміння сказати «так» своїм мріям. Гідність — це вміння сказати «ні» своїм страхам.",
+      "author": "Святослав Вакарчук"
     }
   },
   {
@@ -116,8 +116,63 @@
       "author": "Zig Ziglar"
     },
     "uk": {
-      "text": "Ви не повинні бути великими, щоб почати, але ви повинні почати, щоб бути великими",
+      "text": "Ви не повинні бути великими, щоб почати, але ви повинні почати, щоб бути великими.",
       "author": "Зіг Зіглар"
+    }
+  },
+  {
+    "id": 12,
+    "en": {
+      "text": "To reach a goal, a person needs only one thing - to walk.",
+      "author": "Honoré de Balzac"
+    },
+    "uk": {
+      "text": "Щоб дійти до мети, людині потрібно тільки одне — йти.",
+      "author": "Оноре де Бальзак"
+    }
+  },
+  {
+    "id": 13,
+    "en": {
+      "text": "Desire is the beginning of all great achievements.",
+      "author": "Aristotle"
+    },
+    "uk": {
+      "text": "Бажання є початком усіх великих досягнень.",
+      "author": "Арістотель"
+    }
+  },
+  {
+    "id": 14,
+    "en": {
+      "text": "The most important desire is the desire to live.",
+      "author": "Seneca"
+    },
+    "uk": {
+      "text": "Найважливіше бажання – це бажання жити.",
+      "author": "Сенека"
+    }
+  },
+  {
+    "id": 15,
+    "en": {
+      "text": "Life without desires is useless.",
+      "author": "Aybek"
+    },
+    "uk": {
+      "text": "Життя без бажань – ні на що не потрібне.",
+      "author": "Айбек"
+    }
+  },
+  {
+    "id": 16,
+    "en": {
+      "text": "Desires are necessary for life to be constantly in motion.",
+      "author": "Author unknown"
+    },
+    "uk": {
+      "text": "Бажання потрібні, щоб життя постійно знаходилося в русі.",
+      "author": "Автор невідомий"
     }
   }
 ]
