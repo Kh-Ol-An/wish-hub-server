@@ -5,6 +5,7 @@ const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String },
     lang: { type: String, default: 'en', enum: ['en', 'uk'] },
+    notificationSubscription: { type: Object },
     quoteNumber: { type: Number, default: 0 },
     showedInfo: { type: Boolean, default: false },
     firstLoaded: { type: Boolean, default: false },

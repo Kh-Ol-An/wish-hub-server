@@ -1,6 +1,7 @@
 const { ObjectId } = require('mongoose').Types;
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+const webPush = require('web-push');
 const UserModel = require('../models/user-model');
 const TokenModel = require('../models/token-model');
 const WishModel = require('../models/wish-model');
@@ -291,6 +292,30 @@ class UserService {
         return new UserDto(user);
     };
 
+    async notificationSubscribe(userId, subscription) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`SERVER.UserService.notificationSubscribe: User with ID: “${userId}” not found`);
+        }
+
+        user.notificationSubscription = subscription;
+        await user.save();
+
+        return new UserDto(user);
+    };
+
+    async notificationUnsubscribe(userId) {
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest(`SERVER.UserService.notificationUnsubscribe: User with ID: “${userId}” not found`);
+        }
+
+        user.notificationSubscription = undefined;
+        await user.save();
+
+        return new UserDto(user);
+    };
+
     async changeShowedInfo(userId) {
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -338,10 +363,11 @@ class UserService {
 
         const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.addFriend: User with ID: “${friendId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.addFriend: Friend with ID: “${friendId}” not found`);
         }
 
         if (myUser.followFrom.includes(friendUser.id) && friendUser.followTo.includes(myUser.id)) {
+            // якщо він за мною слідкує і я за ним слідкую, то потрібно нас обох додати до масиву friends і видалити з масивів followFrom і followTo
             myUser.friends.push(friendUser.id);
             myUser.followFrom = myUser.followFrom.filter((id) => id.toString() !== friendUser.id);
             friendUser.friends.push(myUser.id);
@@ -349,6 +375,14 @@ class UserService {
         } else {
             myUser.followTo.push(friendUser.id);
             friendUser.followFrom.push(myUser.id);
+        }
+
+        if (friendUser.notificationSubscription) {
+            const payload = JSON.stringify({
+                title: 'Friend request',
+                body: `${myUser.firstName} ${myUser.lastName} wants to be your friend`,
+            });
+            webPush.sendNotification(friendUser.notificationSubscription, payload).catch(error => console.error(error));
         }
 
         await myUser.save();
@@ -365,7 +399,7 @@ class UserService {
 
         const friendUser = await UserModel.findById(new ObjectId(friendId));
         if (!friendUser) {
-            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: User with ID: “${friendId}” not found`);
+            throw ApiError.BadRequest(`SERVER.UserService.removeFriend: Friend with ID: “${friendId}” not found`);
         }
 
         if (whereRemove === 'friends') {

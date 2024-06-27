@@ -13,6 +13,8 @@ const {
     changeForgottenPassword,
     changePassword,
     changeLang,
+    notificationSubscribe,
+    notificationUnsubscribe,
     changeShowedInfo,
     changeFirstLoaded,
     updateMyUser,
@@ -56,6 +58,8 @@ router.put('/forgot-password', forgotPassword);
 router.put('/change-forgotten-password', changeForgottenPassword);
 router.put('/change-password', authMiddleware, changePassword);
 router.put('/lang', authMiddleware, changeLang);
+router.put('/notification-subscribe', authMiddleware, notificationSubscribe);
+router.put('/notification-unsubscribe', authMiddleware, notificationUnsubscribe);
 router.put('/showed-info', authMiddleware, changeShowedInfo);
 router.put('/first-loaded', authMiddleware, changeFirstLoaded);
 router.put('/user', upload.single('avatar'), authMiddleware, updateMyUser);

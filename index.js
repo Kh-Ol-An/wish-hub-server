@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const cron = require('node-cron');
+const webPush = require('web-push');
 const router = require('./router/index');
 const errorMiddleware = require('./middlewares/error-middleware');
 const UserService = require('./services/user-service');
@@ -39,6 +40,12 @@ cron.schedule(
     {
         timezone: 'UTC'
     },
+);
+
+webPush.setVapidDetails(
+    `mailto:${process.env.SMTP_USER}`,
+    process.env.PUBLIC_VAPID_KEY,
+    process.env.PRIVATE_VAPID_KEY
 );
 
 const start = async () => {

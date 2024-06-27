@@ -154,6 +154,30 @@ class UserController {
         }
     };
 
+    async notificationSubscribe(req, res, next) {
+        try {
+            const { userId, subscription } = req.body;
+
+            const user = await UserService.notificationSubscribe(userId, subscription);
+
+            return res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    async notificationUnsubscribe(req, res, next) {
+        try {
+            const { userId } = req.body;
+
+            const user = await UserService.notificationUnsubscribe(userId);
+
+            return res.json(user);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     async changeShowedInfo(req, res, next) {
         try {
             const { userId } = req.body;
