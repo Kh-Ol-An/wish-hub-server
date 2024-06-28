@@ -352,7 +352,7 @@ class WishService {
         if (wishCreator.notificationSubscription) {
             const payload = JSON.stringify({
                 title: notifications.bookWish[wishCreator.lang].title,
-                body: `${notifications.bookWish[wishCreator.lang].body} ${bookingWish.name}`,
+                body: `${notifications.bookWish[wishCreator.lang].body} ${bookingWish.show === 'all' ? bookingWish.name : decryptData(bookingWish.name)}`,
             });
             webPush.sendNotification(wishCreator.notificationSubscription, payload).catch(error => console.error(error));
         }
