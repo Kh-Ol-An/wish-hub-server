@@ -1,0 +1,12 @@
+{
+  "addFriend": {
+    "en": {
+      "title": "Friend request",
+      "body": "added you as a friend"
+    },
+    "uk": {
+      "title": "Запит на дружбу",
+      "body": "додав Вас в друзі"
+    }
+  }
+}

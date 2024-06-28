@@ -10,6 +10,7 @@ const TokenService = require('./token-service');
 const AwsService = require('./aws-service');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
+const notifications = require('../data/notifications.json');
 const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 const { decryptData } = require("../utils/encryption-data");
 
@@ -378,9 +379,10 @@ class UserService {
         }
 
         if (friendUser.notificationSubscription) {
+            const fullName = myUser.firstName + (myUser.lastName ? ` ${myUser.lastName}` : '');
             const payload = JSON.stringify({
-                title: 'Friend request',
-                body: `${myUser.firstName} ${myUser.lastName} wants to be your friend`,
+                title: notifications.addFriend[friendUser.lang].title,
+                body: `${fullName} ${notifications.addFriend[friendUser.lang].body}`,
             });
             webPush.sendNotification(friendUser.notificationSubscription, payload).catch(error => console.error(error));
         }
