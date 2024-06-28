@@ -8,5 +8,15 @@
       "title": "Запит на дружбу",
       "body": "додав Вас в друзі"
     }
+  },
+  "bookWish": {
+    "en": {
+      "title": "Your wish was booked",
+      "body": "Someone booked your wish:"
+    },
+    "uk": {
+      "title": "Ваше бажання забронювали",
+      "body": "Хтось забронював Ваше бажання:"
+    }
   }
 }

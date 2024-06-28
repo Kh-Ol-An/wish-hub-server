@@ -1,12 +1,14 @@
 const { ObjectId } = require('mongoose').Types;
 const mime = require('mime-types');
+const webPush = require("web-push");
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
-const quotes = require('../data/quotes.json');
 const WishDto = require('../dtos/wish-dto');
 const UserDto = require('../dtos/user-dto');
 const ApiError = require('../exceptions/api-error');
 const AwsService = require('../services/aws-service');
+const quotes = require('../data/quotes.json');
+const notifications = require('../data/notifications.json');
 const getImageId = require('../utils/get-image-id');
 const generateFileId = require('../utils/generate-file-id');
 const { MAX_FILE_SIZE_IN_MB, MAX_NUMBER_OF_FILES } = require('../utils/variables');
@@ -332,12 +334,27 @@ class WishService {
             end,
         };
 
+        // Додайте цитату після бронювання бажання
         let quote = quotes[user.quoteNumber];
         const countQuotes = quotes.length;
         if (user.quoteNumber >= countQuotes) {
             quote = quotes[getRandomInt(0, countQuotes)];
         } else {
             user.quoteNumber++;
+        }
+
+
+        const wishCreator = await UserModel.findById(bookingWish.userId);
+        if (!wishCreator) {
+            throw ApiError.BadRequest('SERVER.WishService.bookWish: User who created wish is not found');
+        }
+
+        if (wishCreator.notificationSubscription) {
+            const payload = JSON.stringify({
+                title: notifications.bookWish[wishCreator.lang].title,
+                body: `${notifications.bookWish[wishCreator.lang].body} ${bookingWish.name}`,
+            });
+            webPush.sendNotification(wishCreator.notificationSubscription, payload).catch(error => console.error(error));
         }
 
         // Збережіть зміни
