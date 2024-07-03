@@ -119,6 +119,7 @@ class UserService {
 
         if (user) {
             user.lang = lang;
+            await user.save();
 
             const userDto = new UserDto(user);
             const tokens = TokenService.generateToken({ ...userDto });
