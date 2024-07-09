@@ -4,6 +4,11 @@ const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String },
+    passwordResetLink: { type: String },
+    passwordResetLinkExpires: { type: Date },
+    isActivated: { type: Boolean, default: false },
+    activationLink: { type: String },
+    activationLinkExpires: { type: Date, default: Date.now() + LINK_WILL_EXPIRE_IN },
     lang: { type: String, default: 'en', enum: ['en', 'uk'] },
     notificationSubscription: { type: Object },
     quoteNumber: { type: Number, default: 0 },
@@ -19,11 +24,8 @@ const UserSchema = new Schema({
     friends: [{ type: Schema.Types.ObjectId, ref: 'User' }], // двосторонній запит
     followFrom: [{ type: Schema.Types.ObjectId, ref: 'User' }], // слідкують за мною
     followTo: [{ type: Schema.Types.ObjectId, ref: 'User' }], // я за ними слідкую
-    isActivated: { type: Boolean, default: false },
-    activationLink: { type: String },
-    activationLinkExpires: { type: Date, default: Date.now() + LINK_WILL_EXPIRE_IN },
-    passwordResetLink: { type: String },
-    passwordResetLinkExpires: { type: Date },
+    likedWishes: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
+    dislikedWishes: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

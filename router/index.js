@@ -71,10 +71,10 @@ router.get('/users', authMiddleware, getUsers);
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.get('/wish', getWish);
-router.post('/wish/done', authMiddleware, doneWish);
-router.post('/wish/undone', authMiddleware, undoneWish);
-router.post('/wish/book', authMiddleware, bookWish);
-router.post('/wish/cancel-book', authMiddleware, cancelBookWish);
+router.put('/wish/book', authMiddleware, bookWish);
+router.put('/wish/cancel-book', authMiddleware, cancelBookWish);
+router.put('/wish/done', authMiddleware, doneWish);
+router.put('/wish/undone', authMiddleware, undoneWish);
 router.delete('/wish', authMiddleware, deleteWish);
 router.get('/wishes', authMiddleware, getWishList);
 

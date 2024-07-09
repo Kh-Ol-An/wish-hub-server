@@ -44,14 +44,15 @@ class WishDto {
     material;
     show;
     name;
+    images;
     price;
     currency;
     addresses;
     description;
     executed;
-    images;
-    createdAt;
-    updatedAt;
+    booking;
+    likes;
+    dislikes;
 
     constructor(model) {
         this.id = model._id;
@@ -59,15 +60,15 @@ class WishDto {
         this.material = model.material;
         this.show = model.show;
         this.name = model.name;
+        this.images = model.images.map(image => new ImageDto(image));
         this.price = dataDto(model.show, model.price);
         this.currency = dataDto(model.show, model.currency);
         this.addresses = model.addresses;
         this.description = model.description;
         this.executed = model.executed;
-        this.images = model.images.map(image => new ImageDto(image));
         this.booking = model.booking ? new BookingDto(model.booking) : null;
-        this.createdAt = model.createdAt;
-        this.updatedAt = model.updatedAt;
+        this.likes = model.likes.length;
+        this.dislikes = model.dislikes.length;
     }
 }
 

@@ -174,5 +174,16 @@
       "text": "Бажання потрібні, щоб життя постійно знаходилося в русі.",
       "author": "Автор невідомий"
     }
+  },
+  {
+    "id": 17,
+    "en": {
+      "text": "Be yourself; everyone else is already taken.",
+      "author": "Oscar Wilde"
+    },
+    "uk": {
+      "text": "Будь собою; всі інші ролі вже взяті.",
+      "author": "Оскар Уайльд"
+    }
   }
 ]

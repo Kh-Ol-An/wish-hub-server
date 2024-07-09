@@ -32,6 +32,8 @@ const WishSchema = new Schema({
         start: { type: Date },
         end: { type: Date }
     },
+    likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    dislikes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

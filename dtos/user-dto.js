@@ -2,6 +2,7 @@ class UserDto {
     id;
     email;
     hasPassword;
+    isActivated;
     lang;
     showedInfo;
     firstLoaded;
@@ -15,14 +16,12 @@ class UserDto {
     friends;
     followFrom;
     followTo;
-    isActivated;
-    createdAt;
-    updatedAt;
 
     constructor(model) {
         this.id = model._id;
         this.email = model.email;
         this.hasPassword = !!(model.password && model.password.length > 0);
+        this.isActivated = model.isActivated;
         this.lang = model.lang;
         this.showedInfo = model.showedInfo;
         this.firstLoaded = model.firstLoaded;
@@ -36,9 +35,6 @@ class UserDto {
         this.friends = model.friends;
         this.followFrom = model.followFrom;
         this.followTo = model.followTo;
-        this.isActivated = model.isActivated;
-        this.createdAt = model.createdAt;
-        this.updatedAt = model.updatedAt;
     }
 }
 
