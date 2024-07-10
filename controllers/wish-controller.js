@@ -33,6 +33,30 @@ class WishController {
         }
     };
 
+    async bookWish(req, res, next) {
+        try {
+            const { userId, wishId, end } = req.body;
+
+            const bookedWishData = await WishService.bookWish(userId, wishId, end);
+
+            return res.json(bookedWishData);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    async cancelBookWish(req, res, next) {
+        try {
+            const { userId, wishId } = req.body;
+
+            const wish = await WishService.cancelBookWish(userId, wishId);
+
+            return res.json(wish);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     async doneWish(req, res, next) {
         try {
             const { userId, wishId, whoseWish } = req.body;
@@ -57,23 +81,23 @@ class WishController {
         }
     };
 
-    async bookWish(req, res, next) {
+    async likeWish(req, res, next) {
         try {
-            const { userId, wishId, end } = req.body;
+            const { userId, wishId } = req.body;
 
-            const bookedWishData = await WishService.bookWish(userId, wishId, end);
+            const wish = await WishService.likeWish(userId, wishId);
 
-            return res.json(bookedWishData);
+            return res.json(wish);
         } catch (error) {
             next(error);
         }
     };
 
-    async cancelBookWish(req, res, next) {
+    async dislikeWish(req, res, next) {
         try {
             const { userId, wishId } = req.body;
 
-            const wish = await WishService.cancelBookWish(userId, wishId);
+            const wish = await WishService.dislikeWish(userId, wishId);
 
             return res.json(wish);
         } catch (error) {

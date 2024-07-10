@@ -67,8 +67,8 @@ class WishDto {
         this.description = model.description;
         this.executed = model.executed;
         this.booking = model.booking ? new BookingDto(model.booking) : null;
-        this.likes = model.likes.length;
-        this.dislikes = model.dislikes.length;
+        this.likes = model.likes;
+        this.dislikes = model.dislikes;
     }
 }
 

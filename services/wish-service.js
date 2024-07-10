@@ -242,78 +242,6 @@ class WishService {
         };
     };
 
-    async doneWish(userId, wishId, whoseWish) {
-        // Знайдіть користувача за його ідентифікатором
-        const user = await UserModel.findById(userId);
-        if (!user) {
-            throw ApiError.BadRequest('SERVER.WishService.doneWish: User not found');
-        }
-
-        // Знайдіть бажання за його ідентифікатором
-        const bookedWish = await WishModel.findById(wishId);
-        if (!bookedWish) {
-            throw ApiError.BadRequest('SERVER.WishService.doneWish: Wish not found');
-        }
-
-        if (user._id.toString() !== bookedWish.userId.toString()) {
-            throw ApiError.BadRequest('SERVER.WishService.doneWish: You cannot mark someone else\'s wish as fulfilled');
-        }
-
-        const executorUser = whoseWish === 'my' ? user : await UserModel.findById(bookedWish.booking.userId);
-        if (!executorUser) {
-            throw ApiError.BadRequest('SERVER.WishService.doneWish: The executor of the wish was not found');
-        }
-
-        // Видаліть бронювання бажання
-        bookedWish.booking = undefined;
-        // Позначте бажання виконаним
-        bookedWish.executed = true;
-
-        // Додати до виконанних бажань користувача ще одне виконанне бажання
-        whoseWish === 'someone' && (executorUser.successfulWishes += 1);
-
-        // Збережіть зміни
-        await bookedWish.save();
-        await executorUser.save();
-
-        return { executorUser: new UserDto(executorUser), bookedWish: new WishDto(bookedWish) };
-    };
-
-    async undoneWish(userId, wishId) {
-        // Знайдіть користувача за його ідентифікатором
-        const user = await UserModel.findById(userId);
-        if (!user) {
-            throw ApiError.BadRequest('SERVER.WishService.undoneWish: User not found');
-        }
-
-        // Знайдіть бажання за його ідентифікатором
-        const bookedWish = await WishModel.findById(wishId);
-        if (!bookedWish) {
-            throw ApiError.BadRequest('SERVER.WishService.undoneWish: Wish not found');
-        }
-
-        if (user._id.toString() !== bookedWish.userId.toString()) {
-            throw ApiError.BadRequest('SERVER.WishService.undoneWish: You cannot mark someone else\'s wish as unfulfilled');
-        }
-
-        const executorUser = await UserModel.findById(bookedWish.booking.userId);
-        if (!executorUser) {
-            throw ApiError.BadRequest('SERVER.WishService.undoneWish: The executor of the wish was not found');
-        }
-
-        // Видаліть бронювання бажання
-        bookedWish.booking = undefined;
-
-        // Додати до виконанних бажань користувача ще одне виконанне бажання
-        executorUser.unsuccessfulWishes += 1;
-
-        // Збережіть зміни
-        await bookedWish.save();
-        await executorUser.save();
-
-        return { executorUser: new UserDto(executorUser), bookedWish: new WishDto(bookedWish) };
-    };
-
     async bookWish(userId, wishId, end) {
         // Знайдіть користувача за його ідентифікатором
         const user = await UserModel.findById(userId);
@@ -388,6 +316,148 @@ class WishService {
         await bookedWish.save();
 
         return new WishDto(bookedWish);
+    };
+
+    async doneWish(userId, wishId, whoseWish) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: User not found');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const bookedWish = await WishModel.findById(wishId);
+        if (!bookedWish) {
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: Wish not found');
+        }
+
+        if (user._id.toString() !== bookedWish.userId.toString()) {
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: You cannot mark someone else\'s wish as fulfilled');
+        }
+
+        const executorUser = whoseWish === 'my' ? user : await UserModel.findById(bookedWish.booking.userId);
+        if (!executorUser) {
+            throw ApiError.BadRequest('SERVER.WishService.doneWish: The executor of the wish was not found');
+        }
+
+        // Видаліть бронювання бажання
+        bookedWish.booking = undefined;
+        // Позначте бажання виконаним
+        bookedWish.executed = true;
+
+        // Додати до виконанних бажань користувача ще одне виконанне бажання
+        whoseWish === 'someone' && (executorUser.successfulWishes += 1);
+
+        // Збережіть зміни
+        await bookedWish.save();
+        await executorUser.save();
+
+        return { executorUser: new UserDto(executorUser), bookedWish: new WishDto(bookedWish) };
+    };
+
+    async undoneWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: User not found');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const bookedWish = await WishModel.findById(wishId);
+        if (!bookedWish) {
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: Wish not found');
+        }
+
+        if (user._id.toString() !== bookedWish.userId.toString()) {
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: You cannot mark someone else\'s wish as unfulfilled');
+        }
+
+        const executorUser = await UserModel.findById(bookedWish.booking.userId);
+        if (!executorUser) {
+            throw ApiError.BadRequest('SERVER.WishService.undoneWish: The executor of the wish was not found');
+        }
+
+        // Видаліть бронювання бажання
+        bookedWish.booking = undefined;
+
+        // Додати до виконанних бажань користувача ще одне виконанне бажання
+        executorUser.unsuccessfulWishes += 1;
+
+        // Збережіть зміни
+        await bookedWish.save();
+        await executorUser.save();
+
+        return { executorUser: new UserDto(executorUser), bookedWish: new WishDto(bookedWish) };
+    };
+
+    async likeWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest('SERVER.WishService.likeWish: User not found');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const wish = await WishModel.findById(wishId);
+        if (!wish) {
+            throw ApiError.BadRequest('SERVER.WishService.likeWish: Wish not found');
+        }
+
+        // Видалити ідентифікатор користувача з масиву dislikes, якщо він там є
+        wish.dislikes = wish.dislikes.filter(dislikedByUser => dislikedByUser.userId.toString() !== user._id.toString());
+
+        if (wish.likes.some(likedByUser => likedByUser.userId.toString() === user._id.toString())) {
+            // Якщо користувач вже поставив like, то видаліть його
+            wish.likes = wish.likes.filter(likedByUser => likedByUser.userId.toString() !== user._id.toString());
+        } else {
+            // Якщо користувач ще не поставив like, то додайте його
+            wish.likes.push({
+                userId: user._id,
+                userAvatar: user.avatar,
+                userFullName: user.firstName + (user.lastName ? ` ${user.lastName}` : ''),
+            });
+        }
+
+        // Збережіть зміни
+        await wish.save();
+        await user.save();
+
+        return new WishDto(wish);
+    };
+
+    async dislikeWish(userId, wishId) {
+        // Знайдіть користувача за його ідентифікатором
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw ApiError.BadRequest('SERVER.WishService.dislikeWish: User not found');
+        }
+
+        // Знайдіть бажання за його ідентифікатором
+        const wish = await WishModel.findById(wishId);
+        if (!wish) {
+            throw ApiError.BadRequest('SERVER.WishService.dislikeWish: Wish not found');
+        }
+
+        // Видалити ідентифікатор користувача з масиву likes, якщо він там є
+        wish.likes = wish.likes.filter(likedByUser => likedByUser.userId.toString() !== user._id.toString());
+
+        if (wish.dislikes.some(dislikedByUser => dislikedByUser.userId.toString() === user._id.toString())) {
+            // Якщо користувач вже поставив dislike, то видаліть його
+            wish.dislikes = wish.dislikes.filter(dislikedByUser => dislikedByUser.userId.toString() !== user._id.toString());
+        } else {
+            // Якщо користувач ще не поставив dislike, то додайте його
+            wish.dislikes.push({
+                userId: user._id,
+                userAvatar: user.avatar,
+                userFullName: user.firstName + (user.lastName ? ` ${user.lastName}` : ''),
+            });
+        }
+
+        // Збережіть зміни
+        await wish.save();
+        await user.save();
+
+        return new WishDto(wish);
     };
 
     async deleteWish(userId, wishId) {

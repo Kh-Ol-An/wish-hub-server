@@ -27,10 +27,12 @@ const {
     createWish,
     updateWish,
     getWish,
-    doneWish,
-    undoneWish,
     bookWish,
     cancelBookWish,
+    doneWish,
+    undoneWish,
+    likeWish,
+    dislikeWish,
     deleteWish,
     getWishList,
 } = require('../controllers/wish-controller');
@@ -75,6 +77,8 @@ router.put('/wish/book', authMiddleware, bookWish);
 router.put('/wish/cancel-book', authMiddleware, cancelBookWish);
 router.put('/wish/done', authMiddleware, doneWish);
 router.put('/wish/undone', authMiddleware, undoneWish);
+router.put('/wish/like', authMiddleware, likeWish);
+router.put('/wish/dislike', authMiddleware, dislikeWish);
 router.delete('/wish', authMiddleware, deleteWish);
 router.get('/wishes', authMiddleware, getWishList);
 
