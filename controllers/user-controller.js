@@ -204,7 +204,7 @@ class UserController {
 
     async updateMyUser(req, res, next) {
         try {
-            const { userId, firstName, lastName, birthday, avatar } = req.body;
+            const { userId, firstName, lastName, avatar, deliveryAddress, birthday } = req.body;
             const file = req.file;
 
             let avatarPath = avatar;
@@ -219,7 +219,14 @@ class UserController {
                 );
             }
 
-            const user = await UserService.updateMyUser(userId, firstName, lastName, birthday, avatarPath);
+            const user = await UserService.updateMyUser(
+                userId,
+                firstName,
+                lastName,
+                avatarPath,
+                deliveryAddress,
+                birthday,
+            );
 
             return res.json(user);
         } catch (error) {

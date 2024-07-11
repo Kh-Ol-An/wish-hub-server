@@ -342,7 +342,7 @@ class UserService {
         return new UserDto(user);
     };
 
-    async updateMyUser(userId, firstName, lastName, birthday, avatar) {
+    async updateMyUser(userId, firstName, lastName, avatar, deliveryAddress, birthday) {
         const user = await UserModel.findById(userId);
         if (!user) {
             throw ApiError.BadRequest(`SERVER.UserService.updateMyUser: User with ID: “${userId}” not found`);
@@ -350,8 +350,9 @@ class UserService {
 
         user.firstName = firstName;
         user.lastName = lastName;
-        user.birthday = birthday;
         avatar !== null && (user.avatar = avatar);
+        user.deliveryAddress = deliveryAddress;
+        user.birthday = birthday;
         await user.save();
 
         return new UserDto(user);

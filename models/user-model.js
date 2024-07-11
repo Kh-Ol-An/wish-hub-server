@@ -17,6 +17,7 @@ const UserSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String },
     avatar: { type: String },
+    deliveryAddress: { type: String },
     birthday: { type: Date },
     wishList: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
     successfulWishes: { type: Number, default: 0 },

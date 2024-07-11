@@ -9,6 +9,7 @@ class UserDto {
     firstName;
     lastName;
     avatar;
+    deliveryAddress;
     birthday;
     wishList;
     successfulWishes;
@@ -28,6 +29,7 @@ class UserDto {
         this.firstName = model.firstName;
         this.lastName = model.lastName;
         this.avatar = model.avatar;
+        this.deliveryAddress = model.deliveryAddress;
         this.birthday = model.birthday;
         this.wishList = model.wishList;
         this.successfulWishes = model.successfulWishes;
