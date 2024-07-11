@@ -498,7 +498,7 @@ class WishService {
 
         if (myId === userId) {
             // якщо запитуємо власний список бажань, то повертаємо його в тому порядку, в якому він був створений
-            return user.wishList.map(wish => new WishDto(wish)).sort((a, b) => b.updatedAt - a.updatedAt);
+            return user.wishList.map(wish => new WishDto(wish)).sort((a, b) => b.createdAt - a.createdAt);
         }
 
         return user.wishList
@@ -514,7 +514,7 @@ class WishService {
                 return user.friends.some(friendId => friendId.toString() === myId);
             })
             .map(wish => new WishDto(wish)) // перетворюємо бажання в об'єкти класу WishDto
-            .sort((a, b) => b.updatedAt - a.updatedAt); // сортуємо бажання за датою оновлення
+            .sort((a, b) => b.createdAt - a.createdAt); // сортуємо бажання за датою оновлення
     };
 }
 
