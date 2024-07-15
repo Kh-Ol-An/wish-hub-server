@@ -280,6 +280,17 @@ class UserController {
             next(error);
         }
     };
+
+    async getAllUsers(req, res, next) {
+        try {
+            const { page, limit, search } = req.query;
+            const usersData = await UserService.getAllUsers(page, limit, search);
+
+            return res.json(usersData);
+        } catch (error) {
+            next(error);
+        }
+    };
 }
 
 module.exports = new UserController();

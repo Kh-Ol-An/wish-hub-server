@@ -22,6 +22,7 @@ const {
     removeFriend,
     deleteMyUser,
     getUsers,
+    getAllUsers,
 } = require('../controllers/user-controller');
 const {
     createWish,
@@ -69,6 +70,7 @@ router.post('/friend', authMiddleware, addFriend);
 router.delete('/friend', authMiddleware, removeFriend);
 router.post('/user/delete', authMiddleware, deleteMyUser);
 router.get('/users', authMiddleware, getUsers);
+router.get('/all-users', getAllUsers);
 
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);

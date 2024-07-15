@@ -530,6 +530,28 @@ class UserService {
             users: usersDto,
         };
     };
+
+    async getAllUsers(page, limit, search) {
+        let query = {};
+
+        // Додати пошук за ім'ям
+        if (search) {
+            query.$or = [
+                { firstName: { $regex: search, $options: 'i' } },
+                { lastName: { $regex: search, $options: 'i' } },
+            ];
+        }
+
+        const skip = (page - 1) * limit;
+
+        // Виконати запит до бази даних
+        const users = await UserModel.find(query)
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        return users.map(user => new UserDto(user));
+    };
 }
 
 module.exports = new UserService();
