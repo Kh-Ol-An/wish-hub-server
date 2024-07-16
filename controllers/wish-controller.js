@@ -128,6 +128,18 @@ class WishController {
             next(error);
         }
     };
+
+    async getAllWishes(req, res, next) {
+        try {
+            const { page, limit, search, sort } = req.query;
+
+            const wishList = await WishService.getAllWishes(page, limit, search, sort);
+
+            return res.json(wishList);
+        } catch (error) {
+            next(error);
+        }
+    };
 }
 
 module.exports = new WishController();

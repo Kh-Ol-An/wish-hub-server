@@ -36,6 +36,7 @@ const {
     dislikeWish,
     deleteWish,
     getWishList,
+    getAllWishes,
 } = require('../controllers/wish-controller');
 const authMiddleware = require('../middlewares/auth-middleware');
 const { MAX_NUMBER_OF_FILES } = require('../utils/variables');
@@ -83,5 +84,6 @@ router.put('/wish/like', authMiddleware, likeWish);
 router.put('/wish/dislike', authMiddleware, dislikeWish);
 router.delete('/wish', authMiddleware, deleteWish);
 router.get('/wishes', authMiddleware, getWishList);
+router.get('/all-wishes', getAllWishes);
 
 module.exports = router;

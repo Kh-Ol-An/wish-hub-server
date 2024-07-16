@@ -16,7 +16,7 @@ const { encryptData, decryptData } = require('../utils/encryption-data');
 const { getRandomInt } = require('../utils/get-random-int');
 
 class WishService {
-    static ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    static ALLOWED_EXTENSIONS = [ 'jpg', 'jpeg', 'png', 'gif', 'webp' ];
 
     static isAllowedExtension(filename) {
         const extension = filename.split('.').pop().toLowerCase();
@@ -271,7 +271,6 @@ class WishService {
             user.quoteNumber++;
         }
 
-
         const wishCreator = await UserModel.findById(bookingWish.userId);
         if (!wishCreator) {
             throw ApiError.BadRequest('SERVER.WishService.bookWish: User who created wish is not found');
@@ -501,7 +500,7 @@ class WishService {
             return user.wishList.sort((a, b) => b.createdAt - a.createdAt).map(wish => new WishDto(wish));
         }
 
-        return user.wishList
+        const result = user.wishList
             .filter(wish => { // фільтруємо бажання в залежності від того, хто може їх бачити
                 if (wish.show === 'all') {
                     return true;
@@ -514,8 +513,69 @@ class WishService {
                 return user.friends.some(friendId => friendId.toString() === myId);
             })
             .sort((a, b) => b.createdAt - a.createdAt) // сортуємо бажання за датою оновлення
-            .map(wish => new WishDto(wish)); // перетворюємо бажання в об'єкти класу WishDto
+
+        return result.map(user => new UserDto(user)); // перетворюємо бажання в об'єкти класу WishDto
     };
+
+    async getAllWishes(page, limit, search, sort) {
+        let match = {};
+
+        // Перетворюємо page та limit на числа
+        page = parseInt(page, 10);
+        limit = parseInt(limit, 10);
+
+        // Додати пошук за ім'ям
+        if (search) {
+            match.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+            ];
+        }
+
+        // Додати фільтрацію за умовою show === 'all'
+        match.show = 'all';
+
+        // Підготувати параметр сортування
+        let sortQuery = {};
+        if (sort) {
+            const [ field, order ] = sort.split(':');
+            sortQuery[field] = order === 'desc' ? -1 : 1;
+        } else {
+            // За замовчуванням сортуємо за кількістю лайків, потім ті, що без лайків, і по кількості дизлайків
+            sortQuery = {
+                likesCount: -1,
+                hasLikes: -1,
+                dislikesCount: 1
+            };
+        }
+
+        const skip = (page - 1) * limit;
+
+        // Виконуємо запит до MongoDB з фільтрацією, сортуванням, skip і limit
+        const allWishes = await WishModel.aggregate([
+            { $match: match },
+            {
+                $addFields: {
+                    likesCount: { $size: { $ifNull: [ "$likes", [] ] } },
+                    dislikesCount: { $size: { $ifNull: [ "$dislikes", [] ] } },
+                    hasLikes: {
+                        $cond: {
+                            if: { $gt: [ { $size: { $ifNull: [ "$likes", [] ] } }, 0 ] },
+                            then: 1,
+                            else: 0
+                        }
+                    }
+                }
+            }, // додаємо поля likesCount, dislikesCount та hasLikes
+            { $sort: sortQuery },
+            { $skip: skip },
+            { $limit: limit },
+        ]);
+
+        // Повертаємо результат у вигляді об'єктів класу WishDto
+        return allWishes.map(wish => new WishDto(wish));
+    }
+
 }
 
 module.exports = new WishService();
