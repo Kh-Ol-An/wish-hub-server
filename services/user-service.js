@@ -4,7 +4,7 @@ const uuid = require('uuid');
 const webPush = require('web-push');
 const UserModel = require('../models/user-model');
 const TokenModel = require('../models/token-model');
-const WishModel = require('../models/wish-model');
+const WishService = require('../services/wish-service');
 const MailService = require('./mail-service');
 const TokenService = require('./token-service');
 const AwsService = require('./aws-service');
@@ -463,20 +463,20 @@ class UserService {
             }
         }
 
+        for (const wishId of userToBeDeleted.wishList) {
+            await WishService.deleteWish(userId, wishId);
+        }
+
+        const deletedUserPath = await AwsService.deleteFile(`user-${userId}`);
+        if (deletedUserPath.length !== 0) {
+            throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Could not delete all user files');
+        }
+
+        await TokenModel.deleteOne({ user: userId });
+
         const deletedUser = await UserModel.findByIdAndDelete(userId);
         if (!deletedUser) {
             throw ApiError.BadRequest(`SERVER.UserService.deleteMyUser: Could not delete user with ID: “${userId}”`);
-        }
-
-        await TokenModel.deleteOne({ user: deletedUser._id });
-
-        for (const wishId of deletedUser.wishList) {
-            await WishModel.findByIdAndDelete(wishId);
-        }
-
-        const deletedUserPath = await AwsService.deleteFile(`user-${deletedUser._id}`);
-        if (deletedUserPath.length !== 0) {
-            throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Could not delete all user files');
         }
 
         return deletedUser._id;

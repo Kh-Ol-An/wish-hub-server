@@ -42,6 +42,7 @@ const WishSchema = new Schema({
     booking: BookingSchema,
     likes: [LikeSchema],
     dislikes: [LikeSchema],
+    sortByLikes: { type: Number },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });

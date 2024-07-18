@@ -417,6 +417,8 @@ class WishService {
             });
         }
 
+        wish.sortByLikes = wish.likes.length - wish.dislikes.length;
+
         // Збережіть зміни
         await wish.save();
         await user.save();
@@ -451,6 +453,8 @@ class WishService {
                 userFullName: user.firstName + (user.lastName ? ` ${user.lastName}` : ''),
             });
         }
+
+        wish.sortByLikes = wish.likes.length - wish.dislikes.length;
 
         // Збережіть зміни
         await wish.save();
@@ -489,40 +493,93 @@ class WishService {
         return deletedWish._id;
     };
 
-    async getWishList(myId, userId) {
-        const user = await UserModel.findById(userId).populate('wishList');
+    async getWishList(myId, userId, page = 1, limit = 12, wishStatus = 'all', search = '', sort = 'sortByLikes:desc') {
+        // Знаходимо користувача за userId
+        const user = await UserModel.findById(userId);
         if (!user) {
             throw ApiError.BadRequest(`SERVER.WishService.getWishList: User with ID: “${userId}” not found`);
         }
 
-        if (myId === userId) {
-            // якщо запитуємо власний список бажань, то повертаємо його в тому порядку, в якому він був створений
-            return user.wishList.sort((a, b) => b.createdAt - a.createdAt).map(wish => new WishDto(wish));
+        // Створюємо основний запит фільтрації
+        let match = { userId: user._id }; // Фільтруємо тільки бажання цього користувача
+
+        // Додаємо фільтрацію за полем show, якщо користувач запитує чужі бажання
+        if (myId !== userId) {
+            match.$or = [
+                { show: 'all' },
+                { show: 'friends', friends: { $in: [ myId ] } }
+            ];
         }
 
-        const result = user.wishList
-            .filter(wish => { // фільтруємо бажання в залежності від того, хто може їх бачити
-                if (wish.show === 'all') {
-                    return true;
-                }
+        // Додаємо фільтрацію за полем executed на основі wishStatus
+        if (wishStatus === 'fulfilled') {
+            match.executed = true;
+        } else if (wishStatus === 'unfulfilled') {
+            match.executed = false;
+        }
 
-                if (wish.show === 'nobody') {
-                    return false;
-                }
+        // Додаємо пошук за ім'ям
+        if (search) {
+            match.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+            ];
+        }
 
-                return user.friends.some(friendId => friendId.toString() === myId);
-            })
-            .sort((a, b) => b.createdAt - a.createdAt) // сортуємо бажання за датою оновлення
+        // Підготувати параметр сортування
+        let sortQuery = {};
+        if (sort) {
+            const [field, order] = sort.split(':');
+            sortQuery[field] = order === 'desc' ? -1 : 1;
+        } else {
+            // За замовчуванням сортуємо за кількістю лайків
+            sortQuery = {
+                sortByLikes: -1,
+            };
+        }
 
-        return result.map(user => new UserDto(user)); // перетворюємо бажання в об'єкти класу WishDto
-    };
-
-    async getAllWishes(page, limit, search, sort) {
-        let match = {};
+        // Додаємо додаткове сортування за updatedAt у зворотному порядку
+        sortQuery.updatedAt = -1;
 
         // Перетворюємо page та limit на числа
         page = parseInt(page, 10);
         limit = parseInt(limit, 10);
+
+        const skip = (page - 1) * limit;
+
+        // Виконуємо запит до MongoDB з фільтрацією, сортуванням, skip і limit
+        const result = await WishModel.aggregate([
+            { $match: match },
+            { $sort: sortQuery },
+            { $skip: skip },
+            { $limit: limit },
+        ]);
+
+        // Повертаємо результат у вигляді об'єктів класу WishDto
+        return result.map(wish => new WishDto(wish));
+    }
+
+    // db.wishes.find().forEach(wish => {
+    //     let likesCount = (wish.likes || []).length;
+    //     let dislikesCount = (wish.dislikes || []).length;
+    //
+    //     let sortByLikes;
+    //     if (likesCount > dislikesCount) {
+    //         sortByLikes = likesCount - dislikesCount;
+    //     } else if (dislikesCount > likesCount) {
+    //         sortByLikes = -(dislikesCount - likesCount);
+    //     } else {
+    //         sortByLikes = 0;
+    //     }
+    //
+    //     db.wishes.updateOne(
+    //         { _id: wish._id },
+    //         { $set: { sortByLikes: sortByLikes } }
+    //     );
+    // });
+
+    async getAllWishes(page = 1, limit = 12, search = '', sort = 'sortByLikes:desc') {
+        let match = {};
 
         // Додати пошук за ім'ям
         if (search) {
@@ -543,30 +600,22 @@ class WishService {
         } else {
             // За замовчуванням сортуємо за кількістю лайків, потім ті, що без лайків, і по кількості дизлайків
             sortQuery = {
-                likesCount: -1,
-                hasLikes: -1,
-                dislikesCount: 1
+                sortByLikes: -1,
             };
         }
+
+        // Сортування від найновіших до найстаріших
+        sortQuery.updatedAt = -1;
+
+        // Перетворюємо page та limit на числа
+        page = parseInt(page, 10);
+        limit = parseInt(limit, 10);
 
         const skip = (page - 1) * limit;
 
         // Виконуємо запит до MongoDB з фільтрацією, сортуванням, skip і limit
         const allWishes = await WishModel.aggregate([
             { $match: match },
-            {
-                $addFields: {
-                    likesCount: { $size: { $ifNull: [ "$likes", [] ] } },
-                    dislikesCount: { $size: { $ifNull: [ "$dislikes", [] ] } },
-                    hasLikes: {
-                        $cond: {
-                            if: { $gt: [ { $size: { $ifNull: [ "$likes", [] ] } }, 0 ] },
-                            then: 1,
-                            else: 0
-                        }
-                    }
-                }
-            }, // додаємо поля likesCount, dislikesCount та hasLikes
             { $sort: sortQuery },
             { $skip: skip },
             { $limit: limit },
@@ -575,7 +624,6 @@ class WishService {
         // Повертаємо результат у вигляді об'єктів класу WishDto
         return allWishes.map(wish => new WishDto(wish));
     }
-
 }
 
 module.exports = new WishService();
