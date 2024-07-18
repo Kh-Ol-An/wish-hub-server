@@ -493,7 +493,7 @@ class WishService {
         return deletedWish._id;
     };
 
-    async getWishList(myId, userId, page = 1, limit = 12, wishStatus = 'all', search = '', sort = 'sortByLikes:desc') {
+    async getWishList(myId, userId, page = 1, limit = 12, wishStatus = 'all', search = '', sort = 'createdAt:desc') {
         // Знаходимо користувача за userId
         const user = await UserModel.findById(userId);
         if (!user) {
