@@ -98,7 +98,11 @@ class UserService {
         });
 
         for (const account of inactiveAccounts) {
-            await UserModel.deleteOne({ _id: account._id });
+            try {
+                await this.deleteMyUser(account._id.toString(), account.email);
+            } catch (error) {
+                console.error(`SERVER.UserService.deleteInactiveAccounts: Failed to delete account with ID: ${account._id.toString()}`, error);
+            }
         }
     };
 
@@ -455,7 +459,8 @@ class UserService {
             throw ApiError.BadRequest('SERVER.UserService.deleteMyUser: Data entry error');
         }
 
-        if (userToBeDeleted.password && userToBeDeleted.password.length > 0) {
+        if (password && userToBeDeleted.password && userToBeDeleted.password.length > 0) {
+            // маємо перевірити чи надав користувач пароль, бо можливий виклик з методу deleteInactiveAccounts де немає зашифрованого паролю
             const decryptedPassword = decryptData(password);
             const isPassEquals = await bcrypt.compare(decryptedPassword, userToBeDeleted.password);
             if (!isPassEquals) {
