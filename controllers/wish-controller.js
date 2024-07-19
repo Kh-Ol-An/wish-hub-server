@@ -119,9 +119,9 @@ class WishController {
 
     async getWishList(req, res, next) {
         try {
-            const { myId, userId, page, limit, wishStatus, search, sort } = req.query;
+            const { myId, userId, page, limit, status, search, sort } = req.query;
 
-            const wishList = await WishService.getWishList(myId, userId, page, limit, wishStatus, search, sort);
+            const wishList = await WishService.getWishList(myId, userId, page, limit, status, search, sort);
 
             return res.json(wishList);
         } catch (error) {

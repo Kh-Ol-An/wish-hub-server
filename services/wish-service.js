@@ -493,7 +493,7 @@ class WishService {
         return deletedWish._id;
     };
 
-    async getWishList(myId, userId, page = 1, limit = 12, wishStatus = 'all', search = '', sort = 'createdAt:desc') {
+    async getWishList(myId, userId, page = 1, limit = 12, status = 'all', search = '', sort = 'createdAt:desc') {
         // Знаходимо користувача за userId
         const user = await UserModel.findById(userId);
         if (!user) {
@@ -511,10 +511,10 @@ class WishService {
             ];
         }
 
-        // Додаємо фільтрацію за полем executed на основі wishStatus
-        if (wishStatus === 'fulfilled') {
+        // Додаємо фільтрацію за полем executed на основі status
+        if (status === 'fulfilled') {
             match.executed = true;
-        } else if (wishStatus === 'unfulfilled') {
+        } else if (status === 'unfulfilled') {
             match.executed = false;
         }
 
