@@ -591,8 +591,6 @@ class WishService {
 
     // ***************************************
 
-    // mpn i
-
     // db.wishes.find().forEach(wish => {
     //     let likesCount = (wish.likes || []).length;
     //     let dislikesCount = (wish.dislikes || []).length;
