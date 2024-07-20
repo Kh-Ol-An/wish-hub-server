@@ -503,12 +503,16 @@ class WishService {
         // Створюємо основний запит фільтрації
         let match = { userId: user._id }; // Фільтруємо тільки бажання цього користувача
 
+        // Перевіряємо, чи є myId у списку друзів користувача
+        const isFriend = user.friends.includes(myId);
+
         // Додаємо фільтрацію за полем show, якщо користувач запитує чужі бажання
         if (myId !== userId) {
-            match.$or = [
-                { show: 'all' },
-                { show: 'friends', friends: { $in: [ myId ] } }
-            ];
+            match.$or = [{ show: 'all' }];
+
+            if (isFriend) {
+                match.$or.push({ show: 'friends' });
+            }
         }
 
         // Додаємо фільтрацію за полем executed на основі status
