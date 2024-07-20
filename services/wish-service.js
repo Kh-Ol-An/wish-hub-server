@@ -494,7 +494,14 @@ class WishService {
     };
 
     async getWishList(myId, userId, page = 1, limit = 12, status = 'all', search = '', sort = 'createdAt:desc') {
-        // Знаходимо користувача за userId
+        // console.log('myId: ', myId);
+        // console.log('userId: ', userId);
+        // console.log('page: ', page);
+        // console.log('limit: ', limit);
+        // console.log('status: ', status);
+        // console.log('search: ', search);
+        // console.log('sort: ', sort);
+
         const user = await UserModel.findById(userId);
         if (!user) {
             throw ApiError.BadRequest(`SERVER.WishService.getWishList: User with ID: “${userId}” not found`);
@@ -505,7 +512,6 @@ class WishService {
 
         // Перевіряємо, чи є myId у списку друзів користувача
         const isFriend = user.friends.includes(myId);
-
         // Додаємо фільтрацію за полем show, якщо користувач запитує чужі бажання
         if (myId !== userId) {
             match.$or = [{ show: 'all' }];
@@ -522,13 +528,22 @@ class WishService {
             match.executed = false;
         }
 
-        // Додаємо пошук за ім'ям
+        // Додаємо пошук за ім'ям та описом
         if (search) {
-            match.$or = [
+            const searchConditions = [
                 { name: { $regex: search, $options: 'i' } },
                 { description: { $regex: search, $options: 'i' } },
             ];
+
+            if (match.$or) {
+                match.$and = [{ $or: match.$or }, { $or: searchConditions }];
+                delete match.$or;
+            } else {
+                match.$or = searchConditions;
+            }
         }
+
+        // console.log('match: ', match);
 
         // Підготувати параметр сортування
         let sortQuery = {};
