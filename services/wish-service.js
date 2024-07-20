@@ -534,7 +534,7 @@ class WishService {
         } else {
             // За замовчуванням сортуємо за кількістю лайків
             sortQuery = {
-                sortByLikes: -1,
+                createdAt: -1,
             };
         }
 
@@ -560,17 +560,44 @@ class WishService {
     }
 
     // db.wishes.find().forEach(wish => {
+    //     let priceNumber = parseFloat(wish.price);
+    //
+    //     db.wishes.updateOne(
+    //         { _id: wish._id },
+    //         { $set: { price: priceNumber } }
+    //     );
+    // });
+
+    // db.wishes.find().forEach(async (wish) => {
+    //     let priceInBaseCurrency = 0;
+    //
+    //     if (wish.price && wish.price.length > 0 && parseFloat(wish.price) > 0) {
+    //         const exchangeRates = {
+    //             UAH: 45.16486,
+    //             USD: 1.089265,
+    //             EUR: 1
+    //         };
+    //         const baseCurrency = 'USD';
+    //         const currency = wish.currency || 'UAH';
+    //         const rate = exchangeRates[currency] / exchangeRates[baseCurrency];
+    //         priceInBaseCurrency = parseFloat(wish.price) / rate;
+    //     }
+    //
+    //     db.wishes.updateOne(
+    //         { _id: wish._id },
+    //         { $set: { priceInBaseCurrency: priceInBaseCurrency } }
+    //     );
+    // });
+
+    // ***************************************
+
+    // mpn i
+
+    // db.wishes.find().forEach(wish => {
     //     let likesCount = (wish.likes || []).length;
     //     let dislikesCount = (wish.dislikes || []).length;
     //
-    //     let sortByLikes;
-    //     if (likesCount > dislikesCount) {
-    //         sortByLikes = likesCount - dislikesCount;
-    //     } else if (dislikesCount > likesCount) {
-    //         sortByLikes = -(dislikesCount - likesCount);
-    //     } else {
-    //         sortByLikes = 0;
-    //     }
+    //     let sortByLikes = likesCount - dislikesCount;
     //
     //     db.wishes.updateOne(
     //         { _id: wish._id },

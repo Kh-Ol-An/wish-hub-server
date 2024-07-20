@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const convertToBaseCurrency = require('../utils/convert-to-base-currency');
 
 const ImageSchema = new Schema({
     path: { type: String },
@@ -30,12 +31,13 @@ const WishSchema = new Schema({
     name: { type: String, required: true },
     images: [ImageSchema],
     price: {
-        type: String,
+        type: String, // Тип String, тому що використовується шифрування для ціни
         required: function() {
             return this.material;
         }
     },
     currency:  { type: String, enum: ['UAH', 'USD', 'EUR'] },
+    priceInBaseCurrency: { type: Number }, // для сортування
     addresses:  [AddressSchema],
     description: { type: String },
     executed: { type: Boolean, default: false },
@@ -47,8 +49,18 @@ const WishSchema = new Schema({
     updatedAt: { type: Date, default: Date.now },
 });
 
-WishSchema.pre('save', function (next) {
+WishSchema.pre('save', async function (next) {
     this.updatedAt = new Date();
+
+    // Конвертація ціни у базову валюту (USD)
+    if (this.isModified('price') || this.isModified('currency')) {
+        if (this.price && this.price.length > 0 && parseFloat(this.price) > 0) {
+            this.priceInBaseCurrency = await convertToBaseCurrency(this.price, this.currency);
+        } else {
+            this.priceInBaseCurrency = 0;
+        }
+    }
+
     next();
 });
 
