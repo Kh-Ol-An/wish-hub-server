@@ -83,7 +83,7 @@ router.put('/wish/undone', authMiddleware, undoneWish);
 router.put('/wish/like', authMiddleware, likeWish);
 router.put('/wish/dislike', authMiddleware, dislikeWish);
 router.delete('/wish', authMiddleware, deleteWish);
-router.get('/wishes', authMiddleware, getWishList);
+router.get('/wishes', getWishList);
 router.get('/all-wishes', getAllWishes);
 
 module.exports = router;
