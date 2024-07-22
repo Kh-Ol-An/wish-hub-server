@@ -502,16 +502,16 @@ class WishService {
         // console.log('search: ', search);
         // console.log('sort: ', sort);
 
-        const user = await UserModel.findById(userId);
-        if (!user) {
+        const creator = await UserModel.findById(userId);
+        if (!creator) {
             throw ApiError.BadRequest(`SERVER.WishService.getWishList: User with ID: “${userId}” not found`);
         }
 
         // Створюємо основний запит фільтрації
-        let match = { userId: user._id }; // Фільтруємо тільки бажання цього користувача
+        let match = { userId: creator._id }; // Фільтруємо тільки бажання цього користувача
 
         // Перевіряємо, чи є myId у списку друзів користувача
-        const isFriend = user.friends.includes(myId);
+        const isFriend = creator.friends.includes(myId);
         // Додаємо фільтрацію за полем show, якщо користувач запитує чужі бажання
         if (myId !== userId) {
             match.$or = [{ show: 'all' }];
@@ -575,7 +575,10 @@ class WishService {
         ]);
 
         // Повертаємо результат у вигляді об'єктів класу WishDto
-        return result.map(wish => new WishDto(wish));
+        return {
+            creator: new UserDto(creator),
+            wishes: result.map(wish => new WishDto(wish)),
+        };
     }
 
     // db.wishes.find().forEach(wish => {
