@@ -9,7 +9,7 @@ const UserSchema = new Schema({
     isActivated: { type: Boolean, default: false },
     activationLink: { type: String },
     activationLinkExpires: { type: Date, default: Date.now() + LINK_WILL_EXPIRE_IN },
-    lang: { type: String, default: 'en', enum: ['en', 'uk'] },
+    lang: { type: String, default: 'uk', enum: ['en', 'uk'] },
     notificationSubscription: { type: Object },
     quoteNumber: { type: Number, default: 0 },
     showedInfo: { type: Boolean, default: false },
