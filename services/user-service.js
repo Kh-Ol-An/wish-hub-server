@@ -346,7 +346,17 @@ class UserService {
         return new UserDto(user);
     };
 
-    async updateMyUser(userId, firstName, lastName, avatar, deliveryAddress, birthday) {
+    async updateMyUser(
+        userId,
+        firstName,
+        lastName,
+        avatar,
+        showEmail,
+        deliveryAddress,
+        showDeliveryAddress,
+        birthday,
+        showBirthday,
+    ) {
         const user = await UserModel.findById(userId);
         if (!user) {
             throw ApiError.BadRequest(`SERVER.UserService.updateMyUser: User with ID: “${userId}” not found`);
@@ -355,8 +365,11 @@ class UserService {
         user.firstName = firstName;
         user.lastName = lastName;
         avatar !== null && (user.avatar = avatar);
+        user.showEmail = showEmail;
         user.deliveryAddress = deliveryAddress;
+        showDeliveryAddress && (user.showDeliveryAddress = showDeliveryAddress);
         user.birthday = birthday;
+        showBirthday && (user.showBirthday = showBirthday);
         await user.save();
 
         return new UserDto(user);

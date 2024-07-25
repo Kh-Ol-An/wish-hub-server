@@ -3,6 +3,7 @@ const { LINK_WILL_EXPIRE_IN } = require('../utils/variables');
 
 const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
+    showEmail: { type: String, required: true, default: 'all', enum: ['all', 'friends', 'nobody'] },
     password: { type: String },
     passwordResetLink: { type: String },
     passwordResetLinkExpires: { type: Date },
@@ -18,7 +19,9 @@ const UserSchema = new Schema({
     lastName: { type: String },
     avatar: { type: String },
     deliveryAddress: { type: String },
+    showDeliveryAddress: { type: String, required: true, default: 'all', enum: ['all', 'friends', 'nobody'] },
     birthday: { type: Date },
+    showBirthday: { type: String, required: true, default: 'all', enum: ['all', 'friends', 'nobody'] },
     wishList: [{ type: Schema.Types.ObjectId, ref: 'Wish' }],
     successfulWishes: { type: Number, default: 0 },
     unsuccessfulWishes: { type: Number, default: 0 },

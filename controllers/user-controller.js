@@ -204,7 +204,17 @@ class UserController {
 
     async updateMyUser(req, res, next) {
         try {
-            const { userId, firstName, lastName, avatar, deliveryAddress, birthday } = req.body;
+            const {
+                userId,
+                firstName,
+                lastName,
+                avatar,
+                showEmail,
+                deliveryAddress,
+                showDeliveryAddress,
+                birthday,
+                showBirthday,
+            } = req.body;
             const file = req.file;
 
             let avatarPath = avatar;
@@ -224,8 +234,11 @@ class UserController {
                 firstName,
                 lastName,
                 avatarPath,
+                showEmail,
                 deliveryAddress,
+                showDeliveryAddress,
                 birthday,
+                showBirthday,
             );
 
             return res.json(user);
