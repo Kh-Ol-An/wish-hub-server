@@ -1,6 +1,6 @@
 const { ObjectId } = require('mongoose').Types;
 const axios = require('axios');
-const puppeteer = require('puppeteer');
+const cheerio = require('cheerio');
 const mime = require('mime-types');
 const webPush = require('web-push');
 const WishModel = require('../models/wish-model');
@@ -49,43 +49,19 @@ class WishService {
 
     async fetchWishDataFromLink(url) {
         try {
-            const browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-            const page = await browser.newPage();
-            await page.goto(url, { waitUntil: 'networkidle2' });
+            const { data } = await axios.get(url);
+            const $ = cheerio.load(data);
 
-            const metaData = await page.evaluate(() => {
-                const getPrice = () => {
-                    const priceSelectors = [
-                        'meta[property="product:price:amount"]',
-                        'meta[itemprop="price"]',
-                        '[itemprop="price"]',
-                        '[class*="price"]'
-                    ];
+            const metaData = {
+                url,
+                name: $('meta[property="og:title"]').attr('content') || $('title').text(),
+                image: $('meta[property="og:image"]').attr('content'),
+                price: $('meta[property="product:price:amount"]').attr('content') ||
+                    $('meta[itemprop="price"]').attr('content') ||
+                    $('[itemprop="price"]').text().trim(),
+                description: $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content')
+            };
 
-                    for (let selector of priceSelectors) {
-                        const element = document.querySelector(selector);
-                        if (element) {
-                            return element.getAttribute('content') || element.textContent.trim();
-                        }
-                    }
-
-                    return null;
-                };
-
-                return {
-                    url: window.location.href,
-                    name: document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title,
-                    image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
-                    price: getPrice(),
-                    description: document.querySelector('meta[property="og:description"]')?.getAttribute('content') ||
-                        document.querySelector('meta[name="description"]')?.getAttribute('content')
-                };
-            });
-
-            await browser.close();
             return metaData;
         } catch (error) {
             console.log('SERVER.WishService.fetchWishDataFromLink: Error fetching data: ', error);
