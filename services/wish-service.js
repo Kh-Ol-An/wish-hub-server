@@ -58,8 +58,7 @@ class WishService {
                 image: $('meta[property="og:image"]').attr('content'),
                 price: $('meta[property="product:price:amount"]').attr('content') ||
                     $('meta[itemprop="price"]').attr('content') ||
-                    $('[itemprop="price"]').text().trim() ||
-                    $('[class*="price"]').text().trim(),
+                    $('[itemprop="price"]').text().trim(),
                 description: $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content')
             };
 
