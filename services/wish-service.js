@@ -133,7 +133,7 @@ class WishService {
             WishService.fileValidator(file);
             const path = await AwsService.uploadFile(
                 file,
-                `user-${userId}/wish-${id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
+                `user-${userId}/wish-${wish.id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
             );
 
             // додаємо картинку до загального масиву з валідною позицією
