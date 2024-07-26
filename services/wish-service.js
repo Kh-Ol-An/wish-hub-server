@@ -49,8 +49,10 @@ class WishService {
 
     async fetchWishDataFromLink(url) {
         try {
-
-            const browser = await puppeteer.launch();
+            const browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
             const page = await browser.newPage();
             await page.goto(url, { waitUntil: 'networkidle2' });
 
@@ -74,7 +76,7 @@ class WishService {
                 };
 
                 return {
-                    url,
+                    url: window.location.href,
                     name: document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title,
                     image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
                     price: getPrice(),
