@@ -3,21 +3,21 @@ const axios = require('axios');
 async function getExchangeRates() {
     const response = await axios.get(process.env.CURRENCY_EXCHANGE_URL);
     // ***** fixer.io ***** //
-    if (response.data.success) {
-        return response.data.rates;
-    } else {
-        throw new Error('Failed to fetch exchange rates');
-    }
+    // if (response.data.success) {
+    //     return response.data.rates;
+    // } else {
+    //     throw new Error('Failed to fetch exchange rates');
+    // }
     // ***** fixer.io ***** //
 
     // ========================================================================================= //
 
     // ***** exchangerate-api.com ***** //
-    // if (response.data.result === 'success') {
-    //     return response.data.conversion_rates;
-    // } else {
-    //     throw new Error('Failed to fetch exchange rates');
-    // }
+    if (response.data.result === 'success') {
+        return response.data.conversion_rates;
+    } else {
+        throw new Error('Failed to fetch exchange rates');
+    }
     // ***** exchangerate-api.com ***** //
 }
 
