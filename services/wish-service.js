@@ -74,7 +74,7 @@ class WishService {
                 };
 
                 return {
-                    url: window.location.href,
+                    url,
                     name: document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title,
                     image: document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
                     price: getPrice(),
