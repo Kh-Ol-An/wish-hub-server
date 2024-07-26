@@ -65,7 +65,7 @@ class WishService {
             return metaData;
         } catch (error) {
             console.log('SERVER.WishService.fetchWishDataFromLink: Error fetching data: ', error);
-            throw ApiError.BadRequest(`SERVER.WishService.fetchWishDataFromLink: Error fetching data: ${error}`);
+            throw ApiError.BadRequest(`SERVER.WishService.fetchWishDataFromLink: Не вдалось отримати дані зі стороннього сервісу: ${error}`);
         }
     };
 
