@@ -1,6 +1,8 @@
 const { ObjectId } = require('mongoose').Types;
+const axios = require('axios');
+const cheerio = require('cheerio');
 const mime = require('mime-types');
-const webPush = require("web-push");
+const webPush = require('web-push');
 const WishModel = require('../models/wish-model');
 const UserModel = require('../models/user-model');
 const WishDto = require('../dtos/wish-dto');
@@ -24,11 +26,6 @@ class WishService {
     };
 
     static wishValidator(name, imageLength) {
-        const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇ'єЄ0-9\s-!"№#$%&()*.,;=?@_]*$/;
-        if (!nameRegex.test(name)) {
-            throw ApiError.BadRequest(`SERVER.WishService.WishService.wishValidator: The wish name “${name}” contains invalid characters. Please use only Latin or Cyrillic letters, numbers, spaces, and the following characters: -!"№#$%&()*.,;=?@_`);
-        }
-
         if (imageLength > MAX_NUMBER_OF_FILES) {
             throw ApiError.BadRequest(`SERVER.WishService.WishService.wishValidator: You are trying to upload ${imageLength} files. Maximum number of files to upload ${MAX_NUMBER_OF_FILES}`);
         }
@@ -47,6 +44,29 @@ class WishService {
                     WishService.ALLOWED_EXTENSIONS.join(', ')
                 }"`
             );
+        }
+    };
+
+    async fetchWishDataFromLink(url) {
+        try {
+            const { data } = await axios.get(url);
+            const $ = cheerio.load(data);
+
+            const metaData = {
+                url,
+                name: $('meta[property="og:title"]').attr('content') || $('title').text(),
+                image: $('meta[property="og:image"]').attr('content'),
+                price: $('meta[property="product:price:amount"]').attr('content') ||
+                    $('meta[itemprop="price"]').attr('content') ||
+                    $('[itemprop="price"]').text().trim() ||
+                    $('[class*="price"]').text().trim(),
+                description: $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content')
+            };
+
+            return metaData;
+        } catch (error) {
+            console.log('SERVER.WishService.fetchWishDataFromLink: Error fetching data: ', error);
+            throw ApiError.BadRequest('SERVER.WishService.fetchWishDataFromLink: Error fetching data');
         }
     };
 
@@ -83,22 +103,61 @@ class WishService {
             }
         }
 
-        const images = [];
+        // ***** IMAGES ***** //
+        const allImages = [];
+        // якщо є нові картинки, то додаємо їх до бази Amazon S3
         for (const key in files) {
             const file = files[key][0];
             WishService.fileValidator(file);
-            const image = await AwsService.uploadFile(
+            const path = await AwsService.uploadFile(
                 file,
-                `user-${userId}/wish-${wish.id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
+                `user-${userId}/wish-${id}/${generateFileId(file.buffer)}.${mime.extension(file.mimetype)}`,
             );
 
-            images.push({
-                path: show === 'all' ? image : encryptData(image),
+            // додаємо картинку до загального масиву з валідною позицією
+            allImages.push({
+                path: show === 'all' ? path : encryptData(path),
                 position: Number(key.split('-')[1]),
             });
         }
+        // проходимось по всіх полях, які містять дані про картинки
+        for (const key in body) {
+            if (key.includes('image')) {
+                // якщо картинка підлягає видаленню, то видаляємо її з бази Amazon S3
+                const parsedImage = JSON.parse(body[key]);
+                if (parsedImage.delete) {
+                    await AwsService.deleteFile(
+                        `user-${userId}/wish-${id}/${
+                            getImageId(show === 'all' ? parsedImage.path : decryptData(parsedImage.path))
+                        }`,
+                    );
+                }
 
-        wish.images = images;
+                // додаємо картинку до загального масиву з валідною позицією
+                allImages.push({
+                    ...parsedImage,
+                    position: Number(key.split('-')[1]),
+                });
+            }
+        }
+        // сортуємо всі картинки за позицією
+        allImages.sort((a, b) => a.position - b.position);
+        // видаляємо картинки з бази MongoDB, які вже були видалені з бази Amazon S3
+        const imagesWithoutDeleted = [];
+        let shift = 0;
+        for (let i = 0; i < allImages.length; i++) {
+            if (allImages[i].delete) {
+                shift++;
+            } else {
+                imagesWithoutDeleted.push({
+                    ...allImages[i],
+                    position: i - shift,
+                });
+            }
+        }
+        wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));
+        // ***** IMAGES ***** //
+
         await wish.save();
 
         user.wishList.push(wish.id);
@@ -155,6 +214,7 @@ class WishService {
             }
         }
 
+        // ***** IMAGES ***** //
         const allImages = [];
         // якщо є нові картинки, то додаємо їх до бази Amazon S3
         for (const key in files) {
@@ -191,10 +251,8 @@ class WishService {
                 });
             }
         }
-
         // сортуємо всі картинки за позицією
         allImages.sort((a, b) => a.position - b.position);
-
         // видаляємо картинки з бази MongoDB, які вже були видалені з бази Amazon S3
         const imagesWithoutDeleted = [];
         let shift = 0;
@@ -208,6 +266,8 @@ class WishService {
                 });
             }
         }
+        wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));
+        // ***** IMAGES ***** //
 
         wish.material = material;
         wish.show = show;
@@ -216,7 +276,6 @@ class WishService {
         wish.currency = show === 'all' ? currency : decryptData(currency);
         wish.addresses = addresses;
         wish.description = description;
-        wish.images = imagesWithoutDeleted.map(image => ({ ...image, path: image.path }));
 
         await wish.save();
 

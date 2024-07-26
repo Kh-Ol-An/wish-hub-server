@@ -1,6 +1,17 @@
 const WishService = require('../services/wish-service');
 
 class WishController {
+    async fetchWishDataFromLink(req, res, next) {
+        try {
+            const { url } = req.query;
+            const wishData = await WishService.fetchWishDataFromLink(url);
+
+            return res.json(wishData);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     async createWish(req, res, next) {
         try {
             const wishData = await WishService.createWish(req.body, req.files, next);

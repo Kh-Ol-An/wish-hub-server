@@ -25,6 +25,7 @@ const {
     getAllUsers,
 } = require('../controllers/user-controller');
 const {
+    fetchWishDataFromLink,
     createWish,
     updateWish,
     getWish,
@@ -73,6 +74,7 @@ router.post('/user/delete', authMiddleware, deleteMyUser);
 router.get('/users', authMiddleware, getUsers);
 router.get('/all-users', getAllUsers);
 
+router.get('/link-wish', authMiddleware, fetchWishDataFromLink );
 router.post('/wish', upload.fields(fields), authMiddleware, createWish);
 router.put('/wish', upload.fields(fields), authMiddleware, updateWish);
 router.get('/wish', getWish);

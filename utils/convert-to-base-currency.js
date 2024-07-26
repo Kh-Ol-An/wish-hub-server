@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function getExchangeRates() {
+const getExchangeRates = async () => {
     const response = await axios.get(process.env.CURRENCY_EXCHANGE_URL);
     // ***** fixer.io ***** //
     // if (response.data.success) {
