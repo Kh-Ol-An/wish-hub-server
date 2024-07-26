@@ -55,7 +55,7 @@ class WishService {
             const page = await browser.newPage();
             await page.goto(url, { waitUntil: 'networkidle2' });
 
-            const metaData = await page.evaluate(() => {
+            const metaData = await page.evaluate((url) => {
                 const getPrice = () => {
                     const priceSelectors = [
                         'meta[property="product:price:amount"]',
@@ -82,7 +82,7 @@ class WishService {
                     description: document.querySelector('meta[property="og:description"]')?.getAttribute('content') ||
                         document.querySelector('meta[name="description"]')?.getAttribute('content')
                 };
-            });
+            }, url);
 
             await browser.close();
             return metaData;
