@@ -61,7 +61,6 @@ class WishService {
                     $('[itemprop="price"]').text().trim(),
                 description: $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content')
             };
-
             return metaData;
         } catch (error) {
             console.log('SERVER.WishService.fetchWishDataFromLink: Error fetching data: ', error);
